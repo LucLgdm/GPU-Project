@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 15:15:51 by lde-merc          #+#    #+#              #
-#    Updated: 2026/02/23 17:18:01 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/02/23 18:27:20 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,12 +25,12 @@ pt: ## Build PathTracing
 clean: ## Clean both
 	$(COMPOSE) run --rm -w /Homeworks/RC $(SERVICE) make clean
 	$(COMPOSE) run --rm -w /Homeworks/PathTracing $(SERVICE) make clean
-	@rm -rf RC/objs PathTracing/objs
-
-fclean: ## Full clean both
+	
+fclean: clean ## Full clean both
 	$(COMPOSE) run --rm -w /Homeworks/RC $(SERVICE) make fclean
 	$(COMPOSE) run --rm -w /Homeworks/PathTracing $(SERVICE) make fclean
 	$(COMPOSE) down --volumes --rmi all
+	@rm -rf RC/objs PathTracing/objs
 
 re: fclean all
 
