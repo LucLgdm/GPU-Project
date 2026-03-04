@@ -8,7 +8,7 @@ services:
       - pt_objs:/Homeworks/PathTracing/objs
       # If cuda is on the host, mount it read-only to the container. Adjust the path if necessary.
       # - /usr/local/cuda:/usr/local/cuda:ro  # toolkit hôte, lecture seule
-      - /media/lde-merc/data/envs/cuda-env:/cuda-env:ro
+      - /sgoinfre/goinfre/Perso/lde-merc/miniconda3/envs/cuda-env:/cuda-env:ro
     working_dir: /Homeworks
     environment:
       # If using the host's CUDA, set these paths. If using a custom CUDA environment, adjust accordingly.

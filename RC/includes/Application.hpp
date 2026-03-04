@@ -12,46 +12,37 @@
 
 #pragma once
 
-// OpenGL
-#define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
+
+#include <memory>
 #include "Exception.hpp"
 
-#include "World.hpp"
 #include "Renderer.hpp"
-#include "Raycaster.hpp"
+
+class Raycaster;
 
 class Application {
 	public:
 		Application();
 		~Application();
-		void cleanup();
 	
 		// Initialization
 		void init(int, char **);
-		void checkInput(int, char **);
-		void initShader();
 
 		// Main loop
 		void run();
-
 		void handleKey();
 	private:
 		// Window parameters
 		GLFWwindow *_window;
-		std::string _mapName;
 		int 		_width = 800;
 		int 		_height = 600;
 
-		// OpenGL parameters
-		GLuint _shaderProgram;
-	
+		Renderer 	_renderer;
+		std::unique_ptr<Raycaster> _raycaster;
+
 		// Functions
 		void initGLFW();
-		void initOpenGL();
 };
