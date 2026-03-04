@@ -6,12 +6,11 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 12:10:37 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/04 16:19:09 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/04 16:21:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cuda_gl_interop.h>
-
 #include "Renderer.hpp"
 
 Renderer::Renderer() : _shaderProgram(0), _VAO(0), _VBO(0), _texture(0), _PBO(0), _cudaPBO(0) {
