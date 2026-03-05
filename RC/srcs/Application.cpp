@@ -71,12 +71,14 @@ void Application::run() {
 		
 		handleKey();
 		
-		// _raycaster->calculate();
-		
-		// _renderer.render();
-
-		glfwSwapBuffers(_window);
-		glfwPollEvents();		
+		uchar4* devPtr = _renderer.mapPBO();
+        _raycaster->update(devPtr);
+        _renderer.unmapPBO();
+        
+        _renderer.render();
+        
+        glfwSwapBuffers(_window);
+        glfwPollEvents();	
 	}
 }
 

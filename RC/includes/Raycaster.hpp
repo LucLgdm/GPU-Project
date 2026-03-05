@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:37:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/05 17:34:59 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/05 17:39:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,7 @@ class Raycaster {
 		~Raycaster();
 
 		
-		void update();
-
-		uchar4* mapPBO();
-		void unmapPBO();
+		void update(uchar4*);
 	private:
 		std::string _mapName;
 		std::vector<std::vector<char>> _map;

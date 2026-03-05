@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:31:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/04 13:15:00 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/05 17:39:16 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,9 @@ class Renderer {
 
 		GLuint getPBO() const { return _PBO; }
 		cudaGraphicsResource* getcudaPBO() const { return _cudaPBO; }
+
+		uchar4* mapPBO();
+		void unmapPBO();
 		
 	private:
 		int _width;
