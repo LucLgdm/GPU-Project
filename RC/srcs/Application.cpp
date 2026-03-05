@@ -11,7 +11,7 @@
 /* ************************************************************************** */
 
 #include "Application.hpp"
-#include "Raycaster.cuh"
+#include "Raycaster.hpp"
 
 Application::Application() { }
 
@@ -31,7 +31,9 @@ void Application::init(int argc, char **argv) {
 		throw inputError("Usage: ./rc <map_file>");
 	initGLFW();
 	_renderer.init(_width, _height);
-	_raycaster = std::make_unique<Raycaster>(argv[1], _renderer.getPBO());
+	uchar4* devPtr = _renderer.mapPBO();
+	_raycaster = std::make_unique<Raycaster>(argv[1], devPtr);
+	_renderer.unmapPBO();
 	std::cout << "\033[33m	Application initialized!\033[0m" << std::endl;
 }
 
@@ -69,9 +71,9 @@ void Application::run() {
 		
 		handleKey();
 		
-		_raycaster->calculate();
+		// _raycaster->calculate();
 		
-		_renderer.render();
+		// _renderer.render();
 
 		glfwSwapBuffers(_window);
 		glfwPollEvents();		

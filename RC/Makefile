@@ -6,15 +6,13 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/04 11:36:13 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/05 17:35:59 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-CONDA_PREFIX ?= $(CONDA_PREFIX)
-
 # Compilers
 CPP      = g++
-NVCC     = $(CONDA_PREFIX)/bin/nvcc
+NVCC     = nvcc
 FLAGS    = -MMD -g -std=c++17 -I includes/
 NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
 LDFLAGS  = -lGL -lGLU -lglfw -lGLEW -lcudart \
