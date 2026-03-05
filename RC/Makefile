@@ -15,8 +15,7 @@ CPP      = g++
 NVCC     = nvcc
 FLAGS    = -MMD -g -std=c++17 -I includes/
 NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
-LDFLAGS  = -lGL -lGLU -lglfw -lGLEW -lcuda -lcudart \
-			-Xlinker -rpath,/media/lde-merc/data/envs/cuda-env/lib
+LDFLAGS  = -lGL -lGLU -lglfw -lGLEW -lcuda -lcudart
 
 # Sources
 vpath %.cpp srcs/
