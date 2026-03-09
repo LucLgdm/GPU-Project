@@ -6,16 +6,18 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/02/23 16:40:26 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/09 16:00:38 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Compilers
 CPP      = g++
 NVCC     = nvcc
-FLAGS    = -MMD -g -std=c++17 -I includes/
+FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes
 NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
-LDFLAGS  = -lGL -lGLU -lglfw -lGLEW -lcuda -lcudart
+LDFLAGS  = -L$(CONDA_PREFIX)/lib \
+           -L$(CUDA_PREFIX)/lib \
+           -lOpenGL -lGLU -lglfw -lGLEW -lcudart
 
 # Sources
 vpath %.cpp srcs/
