@@ -6,17 +6,18 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/02/23 17:11:47 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/09 17:26:11 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Compilers
 CPP      = g++
 NVCC     = nvcc
-FLAGS    = -MMD -g -std=c++17 -I includes/
+FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes
 NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
-LDFLAGS  = -lGL -lGLU -lglfw -lGLEW -lcuda -lcudart \
-			-Xlinker -rpath,/media/lde-merc/data/envs/cuda-env/lib
+LDFLAGS  = -L$(CONDA_PREFIX)/lib \
+           -L$(CUDA_PREFIX)/lib \
+           -lOpenGL -lGLU -lglfw -lGLEW -lcudart
 
 # Sources
 vpath %.cpp srcs/
@@ -45,6 +46,7 @@ clean: ## Clean object files in the container
 
 fclean: clean ## Clean object files and executable and docker volumes
 	@rm -f $(NAME)
+	@rm -rf objs
 	@echo "\033[35mDeleted everything!\033[0m"
 	
 re: fclean all ## Rebuild

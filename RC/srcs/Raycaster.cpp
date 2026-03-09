@@ -6,16 +6,17 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/05 17:35:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/09 18:28:26 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cuda_runtime.h>
 #include "Raycaster.hpp"
+#include <cuda_runtime.h>
 
-Raycaster::Raycaster(const std::string &mapFile, uchar4 *devPtr) : _devPtr(devPtr) {
+Raycaster::Raycaster(const std::string &mapFile) {
 	loadMap(mapFile);
 	checkMapValidity();
+	sendMapGpu();
 }
 
 Raycaster::~Raycaster() { }
@@ -23,21 +24,19 @@ Raycaster::~Raycaster() { }
 void Raycaster::loadMap(const std::string &mapFile) {
 	std::ifstream file(mapFile);
 	if (!file.is_open())
-		throw input_error("Failed to open map file: " + mapFile);
+		throw inputError("	Failed to open map file: " + mapFile);
 	
 	std::string line;
 	while (std::getline(file, line)) {
-		if (line.substr(0, 5) == "#name ") {
-			_mapName = line.substr(6);
+		if (line.substr(0, 6) == "#name ") {
+			_mapName = line.substr(7);
+		} else if (line.empty() || line[0] == '#') {
 			continue;
-		}else if (line.substr(0, 3) == "#map" || line[0] == '\n') {
-			continue;
-		}else {
+		} else {
 			std::vector<char> row(line.begin(), line.end());
 			_map.push_back(row);
 			_mapWidth = std::max(_mapWidth, static_cast<int>(row.size()));
 		}
-		
 	}
 	_mapHeight = static_cast<int>(_map.size());
 }
@@ -71,19 +70,24 @@ void Raycaster::setCameraDirection(char c) {
 	}
 }
 
+static bool cameraSet = false;
+
 void Raycaster::checkChar(const std::vector<char> &line) {
 	for (char c : line) {
 		if (c != '0' && c != '1' && c != 'E' && c != 'S' && c != 'W' && c != 'N' && c != ' ')
-			throw input_error("Invalid character in map: " + std::string(1, c));
+			throw inputError("	Invalid character in map: " + std::string(1, c));
 		if (c == 'E' || c == 'S' || c == 'W' || c == 'N') {
+			if (cameraSet)
+				throw inputError("	Multiple camera positions found in map");
+			cameraSet = true;
 			setCameraDirection(c);
 		}
 	}
 }
 
 void Raycaster::floodFill(int x, int y) {
-	if (x <= 0 || x >= _map[y].size() - 1 || y <= 0 || y >= _mapHeight - 1)
-		throw input_error("Map is not closed");
+	if (x < 0 || x >= _map[y].size() || y < 0 || y >= _mapHeight)
+		throw inputError("	Map is not closed");
 	if (_map[y][x] == '1' || _map[y][x] == ' ' || _map[y][x] == 'V')
 		return;
 	_map[y][x] = 'V';
@@ -113,26 +117,32 @@ void Raycaster::checkMapClosed() {
 
 void Raycaster::checkMapValidity() {
 	if (_map.empty())
-		throw input_error("Map is empty");
+		throw inputError("	Map is empty");
 	for (const auto &row : _map)
-		checkChar(row);	
+		checkChar(row);
+	if (!cameraSet)
+		throw inputError("	No camera position found in map");
 	checkMapClosed();
 }
 
-void Raycaster::update() {
+void Raycaster::sendMapGpu() {
+	_flatMap.reserve(_mapWidth * _mapHeight);
+	for (const auto &row : _map) {
+		for (char c : row)
+			_flatMap.push_back(c);
+		// Compléter jusqu'à _mapWidth
+		for (int i = row.size(); i < _mapWidth; i++)
+			_flatMap.push_back(' ');
+	}
+
+	int *devMap;
+	cudaMalloc(&devMap, _flatMap.size() * sizeof(int));
+	cudaMemcpy(devMap, _flatMap.data(), _flatMap.size() * sizeof(int), cudaMemcpyHostToDevice);
+}
+
+
+void Raycaster::update(uchar4 *devPtr) {
 	// This function will be called every frame to update the raycasting logic.
 	// It will launch the CUDA kernel to perform the raycasting calculations on the GPU.
 	
-}
-
-uchar4* Renderer::mapPBO() {
-	uchar4* devPtr = nullptr;
-	size_t size = 0;
-	cudaGraphicsMapResources(1, &_cudaPBO, 0);
-	cudaGraphicsResourceGetMappedPointer((void**)&devPtr, &size, _cudaPBO);
-	return devPtr;
-}
-
-void Renderer::unmapPBO() {
-	cudaGraphicsUnmapResources(1, &_cudaPBO, 0);
 }

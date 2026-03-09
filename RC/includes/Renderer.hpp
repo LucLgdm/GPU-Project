@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:31:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/05 17:39:16 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/09 16:53:41 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,15 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include "Exception.hpp"
+
+
 class cudaGraphicsResource; // Forward declaration for CUDA graphics resource
+class uchar4;
 
 class Renderer {
 	public:

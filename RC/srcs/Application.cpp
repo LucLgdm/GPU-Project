@@ -12,6 +12,7 @@
 
 #include "Application.hpp"
 #include "Raycaster.hpp"
+#include <cuda_runtime.h>
 
 Application::Application() { }
 
@@ -28,18 +29,16 @@ Application::~Application() {
 void Application::init(int argc, char **argv) {
 	std::cout << "\033[33m	Initializing Application...\033[0m" << std::endl;
 	if (argc != 2)
-		throw inputError("Usage: ./rc <map_file>");
+		throw inputError("	Usage: ./rc <map_file>");
 	initGLFW();
 	_renderer.init(_width, _height);
-	uchar4* devPtr = _renderer.mapPBO();
-	_raycaster = std::make_unique<Raycaster>(argv[1], devPtr);
-	_renderer.unmapPBO();
+	_raycaster = std::make_unique<Raycaster>(argv[1]);
 	std::cout << "\033[33m	Application initialized!\033[0m" << std::endl;
 }
 
 void Application::initGLFW() {
 	if (!glfwInit())
-		throw glfwError("GLFW initialization failed");
+		throw glfwError("	GLFW initialization failed");
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -47,14 +46,14 @@ void Application::initGLFW() {
 
 	_window = glfwCreateWindow(_width, _height, "Ray Caster GPU", nullptr, nullptr);
 	if (!_window)
-		throw glfwError("Window creation failed");
+		throw glfwError("	Window creation failed");
 
 	glfwMakeContextCurrent(_window);
 	glfwSwapInterval(1);
 
 	// Charger les fonctions OpenGL avec Glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		throw openGlError("   \033[33mFailed to initialize GLAD\033[0m");
+		throw openGlError("	Failed to initialize GLAD");
 	
 	// Configuration OpenGL
 	glViewport(0, 0, _width, _height);
@@ -71,11 +70,11 @@ void Application::run() {
 		
 		handleKey();
 		
-		uchar4* devPtr = _renderer.mapPBO();
-        _raycaster->update(devPtr);
-        _renderer.unmapPBO();
+		// uchar4* devPtr = _renderer.mapPBO();
+        // _raycaster->update(devPtr);
+        // _renderer.unmapPBO();
         
-        _renderer.render();
+        // _renderer.render();
         
         glfwSwapBuffers(_window);
         glfwPollEvents();	

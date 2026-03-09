@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:37:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/05 17:39:11 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/09 18:27:01 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <string>
+#include <fstream>
 #include "Exception.hpp"
 
 struct Camera {
@@ -28,7 +29,7 @@ struct uchar4;
 
 class Raycaster {
 	public:
-		Raycaster(const std::string&, uchar4*);
+		Raycaster(const std::string&);
 		~Raycaster();
 
 		
@@ -36,10 +37,10 @@ class Raycaster {
 	private:
 		std::string _mapName;
 		std::vector<std::vector<char>> _map;
+		std::vector<int> _flatMap; // Flattened map for CUDA
 		int _mapWidth = 0;
 		int _mapHeight = 0;
-		uchar4* _devPtr;
-		
+				
 		Camera _camera;
 		
 		void loadMap(const std::string&);
@@ -48,4 +49,6 @@ class Raycaster {
 		void checkChar(const std::vector<char> &);
 		void floodFill(int, int);
 		void checkMapClosed();
+
+		void sendMapGpu();
 };

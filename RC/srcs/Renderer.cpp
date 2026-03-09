@@ -6,12 +6,12 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 12:10:37 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/04 16:21:11 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/09 17:01:41 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <cuda_gl_interop.h>
 #include "Renderer.hpp"
+#include <cuda_gl_interop.h>
 
 Renderer::Renderer() : _shaderProgram(0), _VAO(0), _VBO(0), _texture(0), _PBO(0), _cudaPBO(0) {
 }
@@ -40,7 +40,7 @@ void Renderer::init(int width, int height) {
 static std::string readFile(const char* path) {
 	std::ifstream file(path);
 	if (!file.is_open())
-		throw std::runtime_error(std::string("Cannot open shader file: ") + path);
+		throw inputError(std::string("    Cannot open shader file: ") + path);
 
 	std::stringstream buffer;
 	buffer << file.rdbuf();
@@ -142,4 +142,20 @@ void Renderer::render() {
 	glBindVertexArray(_VAO);
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+/************************************************************************
+ * PBO Mapping
+ * **********************************************************************/
+
+uchar4* Renderer::mapPBO() {
+	uchar4* devPtr = nullptr;
+	size_t size = 0;
+	cudaGraphicsMapResources(1, &_cudaPBO, 0);
+	cudaGraphicsResourceGetMappedPointer((void**)&devPtr, &size, _cudaPBO);
+	return devPtr;
+}
+
+void Renderer::unmapPBO() {
+	cudaGraphicsUnmapResources(1, &_cudaPBO, 0);
 }

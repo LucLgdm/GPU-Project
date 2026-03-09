@@ -6,31 +6,30 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 15:15:51 by lde-merc          #+#    #+#              #
-#    Updated: 2026/02/23 18:27:20 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/09 17:26:02 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-
-COMPOSE  = docker compose
-SERVICE  = builder
 
 all: rc pt
 
 # ─── Regles HOST (lancent le docker) ─────────────────────────────────────────
 
 rc: ## Build RC
-	$(COMPOSE) run --rm -w /Homeworks/RC $(SERVICE) make all
+	@echo "\033[36mRaycaster directory for compilation... \033[0m"
+	@make --no-print-directory -C RC all
 pt: ## Build PathTracing
-	$(COMPOSE) run --rm -w /Homeworks/PathTracing $(SERVICE) make all
+	@echo "\033[36mPathTracer directory for compilation... \033[0m"
+	@make --no-print-directory -C PathTracing all
 
 clean: ## Clean both
-	$(COMPOSE) run --rm -w /Homeworks/RC $(SERVICE) make clean
-	$(COMPOSE) run --rm -w /Homeworks/PathTracing $(SERVICE) make clean
+	@echo "\033[36mRaycaster directory for cleaning... \033[0m"
+	@make --no-print-directory -C RC clean
+	@echo "\033[36mPathTracer directory for cleaning... \033[0m"
+	@make --no-print-directory -C PathTracing clean
 	
 fclean: clean ## Full clean both
-	$(COMPOSE) run --rm -w /Homeworks/RC $(SERVICE) make fclean
-	$(COMPOSE) run --rm -w /Homeworks/PathTracing $(SERVICE) make fclean
-	$(COMPOSE) down --volumes --rmi all
-	@rm -rf RC/objs PathTracing/objs
+	@make --no-print-directory -C RC fclean
+	@make --no-print-directory -C PathTracing fclean
 
 re: fclean all
 

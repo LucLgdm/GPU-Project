@@ -6,17 +6,20 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/05 17:35:59 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/09 17:25:50 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+CUDA_PREFIX := $(CONDA_PREFIX)/targets/x86_64-linux
 
 # Compilers
 CPP      = g++
 NVCC     = nvcc
-FLAGS    = -MMD -g -std=c++17 -I includes/
-NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
-LDFLAGS  = -lGL -lGLU -lglfw -lGLEW -lcudart \
-           -Xlinker -rpath -Xlinker $(CONDA_PREFIX)/lib
+FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes
+NVFLAGS	 = -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes --extended-lambda
+LDFLAGS  = -L$(CONDA_PREFIX)/lib \
+           -L$(CUDA_PREFIX)/lib \
+           -lOpenGL -lGLU -lglfw -lGLEW -lcudart
 
 # Sources
 vpath %.cpp srcs/
@@ -45,6 +48,7 @@ clean: ## Clean object files in the container
 
 fclean: clean ## Clean object files and executable and docker volumes
 	@rm -f $(NAME)
+	@rm -rf objs
 	@echo "\033[35mDeleted everything!\033[0m"
 	
 re: fclean all ## Rebuild
