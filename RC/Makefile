@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/09 17:25:50 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/10 14:40:16 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -75,7 +75,7 @@ $(NAME): $(OBJ) $(CUOBJ) $(OBJGLAD)
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	@$(CPP) $(FLAGS) -c $< -o $@
-
+	
 # Compile CUDA sources
 $(OBJDIR)/%.o: %.cu
 	@mkdir -p $(@D)

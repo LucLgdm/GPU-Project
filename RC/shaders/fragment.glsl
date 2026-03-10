@@ -1,8 +1,9 @@
-#version 430 core
-in vec4 vColor;
-
+#version 330 core
+in vec2 vUV;
 out vec4 outColor;
 
+uniform sampler2D uTexture;
+
 void main() {
-    outColor = vColor;
+    outColor = texture(uTexture, vUV);
 }

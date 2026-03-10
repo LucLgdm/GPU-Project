@@ -1,21 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Raycaster.cpp                                      :+:      :+:    :+:   */
+/*   Raycaster.cu                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/09 18:28:26 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 14:12:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Raycaster.hpp"
 #include <cuda_runtime.h>
 
-Raycaster::Raycaster(const std::string &mapFile) {
+__global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int);
+
+Raycaster::Raycaster(const std::string &mapFile, int screenWidth, int screenHeight) :
+						_screenWidth(screenWidth), _screenHeight(screenHeight) {
 	loadMap(mapFile);
 	checkMapValidity();
+	std::cout << "		\033[32mMap loaded successfully!\033[0m" << std::endl;
 	sendMapGpu();
 }
 
@@ -135,14 +139,24 @@ void Raycaster::sendMapGpu() {
 			_flatMap.push_back(' ');
 	}
 
-	int *devMap;
-	cudaMalloc(&devMap, _flatMap.size() * sizeof(int));
-	cudaMemcpy(devMap, _flatMap.data(), _flatMap.size() * sizeof(int), cudaMemcpyHostToDevice);
+	cudaMalloc(&_devMap, _flatMap.size() * sizeof(char));
+	cudaMemcpy(_devMap, _flatMap.data(), _flatMap.size() * sizeof(char), cudaMemcpyHostToDevice);
 }
 
 
 void Raycaster::update(uchar4 *devPtr) {
 	// This function will be called every frame to update the raycasting logic.
 	// It will launch the CUDA kernel to perform the raycasting calculations on the GPU.
+	int nbThreads = _screenWidth;
+	int blockSize = 256;
+	int nbBlocks = (nbThreads + blockSize - 1) / blockSize;
+
+	raycastKernel<<<nbBlocks, blockSize>>>(devPtr, _camera, _devMap,
+												_mapWidth, _mapHeight,
+												_screenWidth, _screenHeight);
+	cudaDeviceSynchronize();
 	
+	cudaError_t err = cudaGetLastError();
+	if (err != cudaSuccess)
+		throw cuda_Error(cudaGetErrorString(err));
 }
