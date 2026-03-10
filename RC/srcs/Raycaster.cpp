@@ -6,15 +6,12 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 18:33:28 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 19:09:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <GLFW/glfw3.h>
 #include "Raycaster.hpp"
-// #include <cuda_runtime.h>
-
-// __global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int);
 
 /********************************************************************************
  * Init and map loading
@@ -47,6 +44,9 @@ void Raycaster::loadMap(const std::string &mapFile) {
 		}
 	}
 	_mapHeight = static_cast<int>(_map.size());
+
+	for (auto &line : _map)
+		line.resize(_mapWidth, ' ');
 }
 
 void Raycaster::setCameraDirection(char c) {
@@ -94,9 +94,11 @@ void Raycaster::checkChar(const std::vector<char> &line) {
 }
 
 void Raycaster::floodFill(int x, int y) {
-	if (x < 0 || x >= _map[y].size() || y < 0 || y >= _mapHeight)
-		throw inputError("	Map is not closed");
-	if (_map[y][x] == '1' || _map[y][x] == ' ' || _map[y][x] == 'V')
+	if (x < 0 || x >= _mapWidth || y < 0 || y >= _mapHeight)
+		throw inputError("	Map is not closed : out of bounds at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
+	if (_map[y][x] == ' ')
+		throw inputError("	Map is not closed : space found at (" + std::to_string(x) + ", " + std::to_string(y) + ")");
+	if (_map[y][x] == '1' || _map[y][x] == 'V')
 		return;
 	_map[y][x] = 'V';
 	floodFill(x + 1, y);
@@ -138,8 +140,8 @@ void Raycaster::checkMapValidity() {
  **************************************************************************************/
  
 void Raycaster::move(GLFWwindow* window) {
-	const float moveSpeed = 0.01f;
-	const float rotSpeed = 0.03f;
+	const float moveSpeed = 0.005f;
+	const float rotSpeed = 0.01f;
 
 	// deplacements
 	int mapX = static_cast<int>(_camera.x);
