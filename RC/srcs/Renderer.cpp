@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 12:10:37 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 15:44:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 15:57:24 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,7 +153,8 @@ void Renderer::resize(int width, int height) {
     cudaGraphicsUnregisterResource(_cudaPBO);
     glDeleteBuffers(1, &_PBO);
     glDeleteTextures(1, &_texture);
-    
+   
+	glViewport(0, 0, _width, _height);
     // Recréer à la bonne taille
     createBuffers();
     createTextures();

@@ -90,7 +90,10 @@ void Application::handleKey() {
 	static int savedX, savedY, savedW, savedH;
 
 	// --- Escape to close the window ---
-	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+	static bool escWasPressed = false;
+	bool escPressed = glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+
+	if (escPressed && !escWasPressed) {
 		if (fullscreen) {
 			// Revenir en windowed
 			glfwSetWindowMonitor(_window, nullptr, savedX, savedY, savedW, savedH, 0);
@@ -102,11 +105,14 @@ void Application::handleKey() {
 			glfwSetWindowShouldClose(_window, true);
 		}
 	}
+	escWasPressed = escPressed;
 
 	// --- Fullscreen toggle ---
-	if (glfwGetKey(_window, GLFW_KEY_F11) == GLFW_PRESS) {
-		fullscreen = !fullscreen;
-		
+	static bool f11WasPressed = false;
+	bool f11Pressed = glfwGetKey(_window, GLFW_KEY_F11) == GLFW_PRESS;
+
+	if (f11Pressed && !f11WasPressed && !fullscreen) {
+		fullscreen = true;
 		if (fullscreen) {
 			// Sauvegarder la position/taille de la fenêtre
 			glfwGetWindowPos(_window, &savedX, &savedY);
@@ -120,6 +126,7 @@ void Application::handleKey() {
 			_raycaster->updateFullscreen(_width, _height);
 		}
 	}
+	f11WasPressed = f11Pressed;
 
 	// --- Camera movement ---
 	handleKeyCamera(_window, _raycaster->getCamera());
