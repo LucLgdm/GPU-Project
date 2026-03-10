@@ -21,7 +21,6 @@ Application::~Application() {
 	glfwTerminate();
 }
 
-
 /************************************************************************
  * Initialization
  * **********************************************************************/
@@ -66,7 +65,7 @@ void Application::initGLFW() {
  * **********************************************************************/
 
 void Application::run() {
-	std::cout << std::endl << "\033[33mLet's play!\033[0m" << std::endl;
+	std::cout << std::endl << "\033[33m	Let's play!\033[0m" << std::endl;
 	while (!glfwWindowShouldClose(_window)) {		
 		
 		handleKey();

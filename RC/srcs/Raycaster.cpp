@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 19:09:49 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 20:08:17 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 /********************************************************************************
  * Init and map loading
  ********************************************************************************/
+
 Raycaster::Raycaster(const std::string &mapFile, int screenWidth, int screenHeight) :
 						_screenWidth(screenWidth), _screenHeight(screenHeight) {
 	loadMap(mapFile);
@@ -80,6 +81,10 @@ void Raycaster::setCameraDirection(char c) {
 
 static bool cameraSet = false;
 
+/********************************************************************
+ * Map validation
+ * ******************************************************************/
+
 void Raycaster::checkChar(const std::vector<char> &line) {
 	for (char c : line) {
 		if (c != '0' && c != '1' && c != 'E' && c != 'S' && c != 'W' && c != 'N' && c != ' ')
@@ -142,46 +147,29 @@ void Raycaster::checkMapValidity() {
 void Raycaster::move(GLFWwindow* window) {
 	const float moveSpeed = 0.005f;
 	const float rotSpeed = 0.01f;
+	const float offset = 0.2f; // to avoid collision issues when close to walls
 
 	// deplacements
-	int mapX = static_cast<int>(_camera.x);
-	int mapY = static_cast<int>(_camera.y);
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		float newX = _camera.x + _camera.dirX * moveSpeed;
-		float newY = _camera.y + _camera.dirY * moveSpeed;
+	auto tryMove = [&](float newX, float newY) {
+		float origX = _camera.x;
+		float origY = _camera.y;
 		
-		if (_map[mapY][static_cast<int>(newX)] != '1')
+		if (_map[static_cast<int>(origY)][static_cast<int>(newX + offset)] != '1' &&
+			_map[static_cast<int>(origY)][static_cast<int>(newX - offset)] != '1')
 			_camera.x = newX;
-		if (_map[static_cast<int>(newY)][mapX] != '1')
+		if (_map[static_cast<int>(newY + offset)][static_cast<int>(origX)] != '1' &&
+			_map[static_cast<int>(newY - offset)][static_cast<int>(origX)] != '1')
 			_camera.y = newY;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		float newX = _camera.x - _camera.dirX * moveSpeed;
-		float newY = _camera.y - _camera.dirY * moveSpeed;
+	};
 
-		if (_map[mapY][static_cast<int>(newX)] != '1')
-			_camera.x = newX;
-		if (_map[static_cast<int>(newY)][mapX] != '1')
-			_camera.y = newY;
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		float newX = _camera.x - _camera.planeX * moveSpeed;
-		float newY = _camera.y - _camera.planeY * moveSpeed;
-
-		if (_map[mapY][static_cast<int>(newX)] != '1')
-			_camera.x = newX;
-		if (_map[static_cast<int>(newY)][mapX] != '1')
-			_camera.y = newY;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		float newX = _camera.x + _camera.planeX * moveSpeed;
-		float newY = _camera.y + _camera.planeY * moveSpeed;
-
-		if (_map[mapY][static_cast<int>(newX)] != '1')
-			_camera.x = newX;
-		if (_map[static_cast<int>(newY)][mapX] != '1')
-			_camera.y = newY;
-	}
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		tryMove(_camera.x + _camera.dirX * moveSpeed, _camera.y + _camera.dirY * moveSpeed);
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		tryMove(_camera.x - _camera.dirX * moveSpeed, _camera.y - _camera.dirY * moveSpeed);
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		tryMove(_camera.x - _camera.planeX * moveSpeed, _camera.y - _camera.planeY * moveSpeed);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		tryMove(_camera.x + _camera.planeX * moveSpeed, _camera.y + _camera.planeY * moveSpeed);
 
 	// Rotation
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {

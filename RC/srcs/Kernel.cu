@@ -131,17 +131,20 @@ __global__ void raycastKernel(uchar4* pbo, Camera cam, char* map,
 	if (drawStart < 0) drawStart = 0;
 	if (drawEnd >= screenHeight) drawEnd = screenHeight - 1;
 
+	float brightness = __saturatef(1.0f / (perpWallDist * 0.84f)); // 0.0 to 1.0, speed factor for brightness
+	unsigned char intensity = (unsigned char)(brightness * 255);
+
 	for (int y = 0; y < screenHeight; y++) {
 		uchar4 color;
 		if (y < drawStart) {
-			color = make_uchar4(50, 50, 50, 255);   // plafond
+			color = make_uchar4(50, 50, 50, 255);   // floor
 		} else if (y <= drawEnd) {
 			if (side == 1)
-				color = make_uchar4(255, 0, 0, 255); // mur rouge
+				color = make_uchar4(intensity, 0, 0, 255); // rouge qui s'assombrit
 			else
-				color = make_uchar4(0, 0, 255, 255); // mur bleu
+				color = make_uchar4(0, 0, intensity, 255); // bleu qui s'assombrit
 		} else {
-			color = make_uchar4(100, 100, 100, 255); // sol
+			color = make_uchar4(50, 50, 175, 255); // sky
 		}
 		pbo[y * screenWidth + idx] = color;
 	}
