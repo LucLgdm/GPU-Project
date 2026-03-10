@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 12:10:37 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/09 17:01:41 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 15:44:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,7 @@ void Renderer::render() {
 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
+	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glUseProgram(_shaderProgram);
@@ -142,6 +143,20 @@ void Renderer::render() {
 	glBindVertexArray(_VAO);
 
 	glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+void Renderer::resize(int width, int height) {
+    _width = width;
+    _height = height;
+    
+    // Détruire l'ancien PBO
+    cudaGraphicsUnregisterResource(_cudaPBO);
+    glDeleteBuffers(1, &_PBO);
+    glDeleteTextures(1, &_texture);
+    
+    // Recréer à la bonne taille
+    createBuffers();
+    createTextures();
 }
 
 /************************************************************************

@@ -16,12 +16,12 @@
 #include <fstream>
 #include <sstream>
 
+#include <cmath>
 #include <memory>
 #include "Exception.hpp"
 
 #include "Renderer.hpp"
-
-class Raycaster;
+#include "Raycaster.hpp"
 
 class Application {
 	public:
@@ -34,11 +34,12 @@ class Application {
 		// Main loop
 		void run();
 		void handleKey();
+		void handleKeyCamera(GLFWwindow*, Camera&);
 	private:
 		// Window parameters
 		GLFWwindow *_window;
-		int 		_width = 800;
-		int 		_height = 600;
+		int 		_width = 1600;
+		int 		_height = 1200;
 
 		Renderer 	_renderer;
 		std::unique_ptr<Raycaster> _raycaster;

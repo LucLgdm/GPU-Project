@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:31:28 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/09 16:53:41 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 15:44:41 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ class Renderer {
 		void createTextures();
 		
 		void render();
+		void resize(int, int);
 
 		GLuint getPBO() const { return _PBO; }
 		cudaGraphicsResource* getcudaPBO() const { return _cudaPBO; }
