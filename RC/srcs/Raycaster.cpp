@@ -1,20 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Raycaster.cu                                       :+:      :+:    :+:   */
+/*   Raycaster.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 14:12:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/10 18:33:28 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <GLFW/glfw3.h>
 #include "Raycaster.hpp"
-#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 
-__global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int);
+// __global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int);
 
+/********************************************************************************
+ * Init and map loading
+ ********************************************************************************/
 Raycaster::Raycaster(const std::string &mapFile, int screenWidth, int screenHeight) :
 						_screenWidth(screenWidth), _screenHeight(screenHeight) {
 	loadMap(mapFile);
@@ -129,34 +133,70 @@ void Raycaster::checkMapValidity() {
 	checkMapClosed();
 }
 
-void Raycaster::sendMapGpu() {
-	_flatMap.reserve(_mapWidth * _mapHeight);
-	for (const auto &row : _map) {
-		for (char c : row)
-			_flatMap.push_back(c);
-		// Compléter jusqu'à _mapWidth
-		for (int i = row.size(); i < _mapWidth; i++)
-			_flatMap.push_back(' ');
+/**************************************************************************************
+ * Camera movement
+ **************************************************************************************/
+ 
+void Raycaster::move(GLFWwindow* window) {
+	const float moveSpeed = 0.01f;
+	const float rotSpeed = 0.03f;
+
+	// deplacements
+	int mapX = static_cast<int>(_camera.x);
+	int mapY = static_cast<int>(_camera.y);
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+		float newX = _camera.x + _camera.dirX * moveSpeed;
+		float newY = _camera.y + _camera.dirY * moveSpeed;
+		
+		if (_map[mapY][static_cast<int>(newX)] != '1')
+			_camera.x = newX;
+		if (_map[static_cast<int>(newY)][mapX] != '1')
+			_camera.y = newY;
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+		float newX = _camera.x - _camera.dirX * moveSpeed;
+		float newY = _camera.y - _camera.dirY * moveSpeed;
+
+		if (_map[mapY][static_cast<int>(newX)] != '1')
+			_camera.x = newX;
+		if (_map[static_cast<int>(newY)][mapX] != '1')
+			_camera.y = newY;
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+		float newX = _camera.x - _camera.planeX * moveSpeed;
+		float newY = _camera.y - _camera.planeY * moveSpeed;
+
+		if (_map[mapY][static_cast<int>(newX)] != '1')
+			_camera.x = newX;
+		if (_map[static_cast<int>(newY)][mapX] != '1')
+			_camera.y = newY;
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+		float newX = _camera.x + _camera.planeX * moveSpeed;
+		float newY = _camera.y + _camera.planeY * moveSpeed;
+
+		if (_map[mapY][static_cast<int>(newX)] != '1')
+			_camera.x = newX;
+		if (_map[static_cast<int>(newY)][mapX] != '1')
+			_camera.y = newY;
 	}
 
-	cudaMalloc(&_devMap, _flatMap.size() * sizeof(char));
-	cudaMemcpy(_devMap, _flatMap.data(), _flatMap.size() * sizeof(char), cudaMemcpyHostToDevice);
-}
+	// Rotation
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+		float oldDirX = _camera.dirX;
+		_camera.dirX = _camera.dirX * cos(rotSpeed) - _camera.dirY * sin(rotSpeed);
+		_camera.dirY = oldDirX * sin(rotSpeed) + _camera.dirY * cos(rotSpeed);
+		float oldPlaneX = _camera.planeX;
+		_camera.planeX = _camera.planeX * cos(rotSpeed) - _camera.planeY * sin(rotSpeed);
+		_camera.planeY = oldPlaneX * sin(rotSpeed) + _camera.planeY * cos(rotSpeed);
+	}
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+		float oldDirX = _camera.dirX;
+		_camera.dirX = _camera.dirX * cos(-rotSpeed) - _camera.dirY * sin(-rotSpeed);
+		_camera.dirY = oldDirX * sin(-rotSpeed) + _camera.dirY * cos(-rotSpeed);
+		float oldPlaneX = _camera.planeX;
+		_camera.planeX = _camera.planeX * cos(-rotSpeed) - _camera.planeY * sin(-rotSpeed);
+		_camera.planeY = oldPlaneX * sin(-rotSpeed) + _camera.planeY * cos(-rotSpeed);
+	}
 
-
-void Raycaster::update(uchar4 *devPtr) {
-	// This function will be called every frame to update the raycasting logic.
-	// It will launch the CUDA kernel to perform the raycasting calculations on the GPU.
-	int nbThreads = _screenWidth;
-	int blockSize = 256;
-	int nbBlocks = (nbThreads + blockSize - 1) / blockSize;
-
-	raycastKernel<<<nbBlocks, blockSize>>>(devPtr, _camera, _devMap,
-												_mapWidth, _mapHeight,
-												_screenWidth, _screenHeight);
-	cudaDeviceSynchronize();
-	
-	cudaError_t err = cudaGetLastError();
-	if (err != cudaSuccess)
-		throw cuda_Error(cudaGetErrorString(err));
 }

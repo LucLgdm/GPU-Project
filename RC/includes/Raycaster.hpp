@@ -17,6 +17,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <cmath>
 #include "Exception.hpp"
 
 struct Camera {
@@ -26,6 +27,7 @@ struct Camera {
 };
 
 struct uchar4;
+struct GLFWwindow;
 
 class Raycaster {
 	public:
@@ -33,8 +35,8 @@ class Raycaster {
 		~Raycaster();
 
 		void update(uchar4*);
-		Camera& getCamera() { return _camera; };
 		void updateFullscreen(int width, int height) { _screenWidth = width; _screenHeight = height; };
+		void move(GLFWwindow*);
 
 	private:
 		std::string _mapName;

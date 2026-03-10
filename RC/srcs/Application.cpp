@@ -66,6 +66,7 @@ void Application::initGLFW() {
  * **********************************************************************/
 
 void Application::run() {
+	std::cout << std::endl << "\033[33mLet's play!\033[0m" << std::endl;
 	while (!glfwWindowShouldClose(_window)) {		
 		
 		handleKey();
@@ -127,49 +128,6 @@ void Application::handleKey() {
 		}
 	}
 	f11WasPressed = f11Pressed;
-
-	// --- Camera movement ---
-	handleKeyCamera(_window, _raycaster->getCamera());
+	_raycaster->move(_window);
 }
 
-void Application::handleKeyCamera(GLFWwindow* window, Camera& camera) {
-	const float moveSpeed = 0.01f;
-	const float rotSpeed = 0.03f;
-
-	// deplacements
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera.x += camera.dirX * moveSpeed;
-		camera.y += camera.dirY * moveSpeed;
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera.x -= camera.dirX * moveSpeed;
-		camera.y -= camera.dirY * moveSpeed;
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera.x -= camera.planeX * moveSpeed;
-		camera.y -= camera.planeY * moveSpeed;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera.x += camera.planeX * moveSpeed;
-		camera.y += camera.planeY * moveSpeed;
-	}
-
-	// Rotation
-	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-		float oldDirX = camera.dirX;
-		camera.dirX = camera.dirX * cos(rotSpeed) - camera.dirY * sin(rotSpeed);
-		camera.dirY = oldDirX * sin(rotSpeed) + camera.dirY * cos(rotSpeed);
-		float oldPlaneX = camera.planeX;
-		camera.planeX = camera.planeX * cos(rotSpeed) - camera.planeY * sin(rotSpeed);
-		camera.planeY = oldPlaneX * sin(rotSpeed) + camera.planeY * cos(rotSpeed);
-	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-		float oldDirX = camera.dirX;
-		camera.dirX = camera.dirX * cos(-rotSpeed) - camera.dirY * sin(-rotSpeed);
-		camera.dirY = oldDirX * sin(-rotSpeed) + camera.dirY * cos(-rotSpeed);
-		float oldPlaneX = camera.planeX;
-		camera.planeX = camera.planeX * cos(-rotSpeed) - camera.planeY * sin(-rotSpeed);
-		camera.planeY = oldPlaneX * sin(-rotSpeed) + camera.planeY * cos(-rotSpeed);
-	}
-
-}

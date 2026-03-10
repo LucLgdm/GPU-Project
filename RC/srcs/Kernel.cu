@@ -14,6 +14,42 @@
 
 __global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int);
 
+
+void Raycaster::sendMapGpu() {
+	_flatMap.reserve(_mapWidth * _mapHeight);
+	for (const auto &row : _map) {
+		for (char c : row)
+			_flatMap.push_back(c);
+		// Compléter jusqu'à _mapWidth
+		for (int i = row.size(); i < _mapWidth; i++)
+			_flatMap.push_back(' ');
+	}
+
+	cudaMalloc(&_devMap, _flatMap.size() * sizeof(char));
+	cudaMemcpy(_devMap, _flatMap.data(), _flatMap.size() * sizeof(char), cudaMemcpyHostToDevice);
+}
+
+/*************************************************************************************
+ * Main update loop and CUDA kernel launch
+ *************************************************************************************/
+
+void Raycaster::update(uchar4 *devPtr) {
+	// This function will be called every frame to update the raycasting logic.
+	// It will launch the CUDA kernel to perform the raycasting calculations on the GPU.
+	int nbThreads = _screenWidth;
+	int blockSize = 256;
+	int nbBlocks = (nbThreads + blockSize - 1) / blockSize;
+
+	raycastKernel<<<nbBlocks, blockSize>>>(devPtr, _camera, _devMap,
+												_mapWidth, _mapHeight,
+												_screenWidth, _screenHeight);
+	cudaDeviceSynchronize();
+
+	cudaError_t err = cudaGetLastError();
+	if (err != cudaSuccess)
+		throw cuda_Error(cudaGetErrorString(err));
+}
+
 __global__ void raycastKernel(uchar4* pbo, Camera cam, char* map, 
 							int mapWidth, int mapHeight,
 							int screenWidth, int screenHeight)
