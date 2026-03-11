@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/11 12:00:52 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/11 13:10:08 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Raycaster::Raycaster(const std::string &mapFile, int screenWidth, int screenHeig
 
 	loadTexture("ressources/textures/sandstone.jpg", &_devTexNS, _texWidth, _texHeight);
 	loadTexture("ressources/textures/castle_brick.jpg", &_devTexEW, _texWidth, _texHeight);
+	loadTexture("ressources/textures/rocky_floor.jpg", &_devTexFloor, _texWidth, _texHeight);
 	std::cout << "		\033[32mTextures loaded successfully!\033[0m" << std::endl;
 	
 	sendMapGpu();
@@ -150,9 +151,13 @@ void Raycaster::checkMapValidity() {
  **************************************************************************************/
  
 void Raycaster::move(GLFWwindow* window) {
-	const float moveSpeed = 0.01f;
+	float moveSpeed = 0.01f;
 	const float rotSpeed = 0.01f;
 	const float offset = 0.2f; // to avoid collision issues when close to walls
+
+	// Run
+	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+		moveSpeed *= 2;
 
 	// deplacements
 	auto tryMove = [&](float newX, float newY) {
