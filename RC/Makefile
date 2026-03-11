@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/10 18:33:01 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/11 11:36:15 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,6 +20,7 @@ NVFLAGS	 = -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes --extended-lambda
 LDFLAGS  = -L$(CONDA_PREFIX)/lib \
            -L$(CUDA_PREFIX)/lib \
            -lOpenGL -lGLU -lglfw -lGLEW -lcudart
+NVFLAGS += -diag-suppress 550
 
 # Sources
 vpath %.cpp srcs/

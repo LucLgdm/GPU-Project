@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 16:21:47 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 20:08:17 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/11 12:00:52 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,14 @@ Raycaster::Raycaster(const std::string &mapFile, int screenWidth, int screenHeig
 	loadMap(mapFile);
 	checkMapValidity();
 	std::cout << "		\033[32mMap loaded successfully!\033[0m" << std::endl;
+
+	loadTexture("ressources/textures/sandstone.jpg", &_devTexNS, _texWidth, _texHeight);
+	loadTexture("ressources/textures/castle_brick.jpg", &_devTexEW, _texWidth, _texHeight);
+	std::cout << "		\033[32mTextures loaded successfully!\033[0m" << std::endl;
+	
 	sendMapGpu();
 }
-
+						
 Raycaster::~Raycaster() { }
 
 void Raycaster::loadMap(const std::string &mapFile) {
@@ -145,7 +150,7 @@ void Raycaster::checkMapValidity() {
  **************************************************************************************/
  
 void Raycaster::move(GLFWwindow* window) {
-	const float moveSpeed = 0.005f;
+	const float moveSpeed = 0.01f;
 	const float rotSpeed = 0.01f;
 	const float offset = 0.2f; // to avoid collision issues when close to walls
 

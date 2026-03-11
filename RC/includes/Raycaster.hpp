@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:37:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 14:09:34 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/11 11:34:16 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,14 @@ class Raycaster {
 		int _mapHeight = 0;
 		int _screenWidth = 0;
 		int _screenHeight = 0;
+		
+		int _texWidth = 0;
+		int _texHeight = 0;
+
 		char *_devMap = nullptr; // Device pointer for map data
-				
+		uchar4 *_devTexNS = nullptr; // Device pointer for texture data
+		uchar4 *_devTexEW = nullptr; // Device pointer for texture data
+		
 		Camera _camera;
 		
 		void loadMap(const std::string&);
@@ -56,6 +62,8 @@ class Raycaster {
 		void checkChar(const std::vector<char> &);
 		void floodFill(int, int);
 		void checkMapClosed();
+
+		void loadTexture(const char*, uchar4**, int&, int&);
 
 		void sendMapGpu();
 };

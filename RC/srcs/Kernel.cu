@@ -10,10 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 #include "Raycaster.hpp"
 
-__global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int);
+__global__ void raycastKernel(uchar4*, Camera, char*, int, int, int, int, uchar4*, uchar4*, int, int);
 
+/********************************************************************************
+ * Map data and texture transfer to GPU
+ ********************************************************************************/
 
 void Raycaster::sendMapGpu() {
 	_flatMap.reserve(_mapWidth * _mapHeight);
@@ -29,6 +34,18 @@ void Raycaster::sendMapGpu() {
 	cudaMemcpy(_devMap, _flatMap.data(), _flatMap.size() * sizeof(char), cudaMemcpyHostToDevice);
 }
 
+void Raycaster::loadTexture(const char* path, uchar4** devTex, int& texW, int& texH) {
+	int channels;
+	unsigned char* data = stbi_load(path, &texW, &texH, &channels, 4);
+	if (!data)
+		throw inputError("Failed to load texture: " + std::string(path));
+	
+	cudaMalloc(devTex, texW * texH * sizeof(uchar4));
+	cudaMemcpy(*devTex, data, texW * texH * sizeof(uchar4), cudaMemcpyHostToDevice);
+	
+	stbi_image_free(data);
+}
+
 /*************************************************************************************
  * Main update loop and CUDA kernel launch
  *************************************************************************************/
@@ -42,7 +59,8 @@ void Raycaster::update(uchar4 *devPtr) {
 
 	raycastKernel<<<nbBlocks, blockSize>>>(devPtr, _camera, _devMap,
 												_mapWidth, _mapHeight,
-												_screenWidth, _screenHeight);
+												_screenWidth, _screenHeight,
+												_devTexNS, _devTexEW, _texWidth, _texHeight);
 	cudaDeviceSynchronize();
 
 	cudaError_t err = cudaGetLastError();
@@ -52,7 +70,8 @@ void Raycaster::update(uchar4 *devPtr) {
 
 __global__ void raycastKernel(uchar4* pbo, Camera cam, char* map, 
 							int mapWidth, int mapHeight,
-							int screenWidth, int screenHeight)
+							int screenWidth, int screenHeight,
+							uchar4* texNS, uchar4* texEW, int texW, int texH)
 {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if (idx >= screenWidth) return;
@@ -131,9 +150,12 @@ __global__ void raycastKernel(uchar4* pbo, Camera cam, char* map,
 	if (drawStart < 0) drawStart = 0;
 	if (drawEnd >= screenHeight) drawEnd = screenHeight - 1;
 
-	float brightness = __saturatef(1.0f / (perpWallDist * 0.84f)); // 0.0 to 1.0, speed factor for brightness
-	unsigned char intensity = (unsigned char)(brightness * 255);
+	// 0.0 to 1.0, speed factor for brightness based on distance
+	float brightness = __saturatef(1.0f / (perpWallDist * 0.4f)); 
+	// unsigned char intensity = (unsigned char)(brightness * 255);
 
+	/* Wall with colors */
+	/*
 	for (int y = 0; y < screenHeight; y++) {
 		uchar4 color;
 		if (y < drawStart) {
@@ -144,7 +166,42 @@ __global__ void raycastKernel(uchar4* pbo, Camera cam, char* map,
 			else
 				color = make_uchar4(0, 0, intensity, 255); // bleu qui s'assombrit
 		} else {
-			color = make_uchar4(50, 50, 175, 255); // sky
+			color = make_uchar4(50, 50, 175, 255); // ceiling
+		}
+		pbo[y * screenWidth + idx] = color;
+	}
+	*/
+
+	/* Wall with textures */
+	float wallX;
+	if (side == 0)
+		wallX = cam.y + perpWallDist * rayDirY;
+	else
+		wallX = cam.x + perpWallDist * rayDirX;
+	wallX -= floor(wallX);
+
+	int texX = (int)(wallX * texW);
+	if (texX < 0) texX = 0;
+	if (texX >= texW) texX = texW - 1;
+	for (int y = 0; y < screenHeight; y++) {
+		uchar4 color;
+		if (y < drawStart) {
+			color = make_uchar4(50, 50, 50, 255);   // floor
+		} else if (y <= drawEnd) {
+			int texY = (int)((y - screenHeight / 2 + lineHeight / 2) * texH / lineHeight);
+			if (texY < 0) texY = 0;
+			if (texY >= texH) texY = texH - 1;
+			uchar4* tex = (side == 0) ? texNS : texEW;
+			// color = tex[texY * texW + texX];
+			uchar4 texColor = tex[texY * texW + texX];
+			color = make_uchar4(
+				(unsigned char)(texColor.x * brightness),
+				(unsigned char)(texColor.y * brightness),
+				(unsigned char)(texColor.z * brightness),
+				255
+			);
+		} else {
+			color = make_uchar4(50, 50, 175, 255); // ceiling
 		}
 		pbo[y * screenWidth + idx] = color;
 	}
