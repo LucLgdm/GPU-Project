@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 17:37:26 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/11 13:09:22 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/17 11:40:05 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ class Raycaster {
 		uchar4 *_devTexNS = nullptr; // Device pointer for texture data
 		uchar4 *_devTexEW = nullptr; // Device pointer for texture data
 		uchar4 *_devTexFloor = nullptr; // Device pointer for texture data
+		uchar4 *_devTexCeil = nullptr; // Device pointer for texture data
 		
 		Camera _camera;
 		
