@@ -11,19 +11,15 @@
 /* ************************************************************************** */
 
 #include "Application.hpp"
+#include "Raycaster.hpp"
+#include <cuda_runtime.h>
 
 Application::Application() { }
 
-Application::~Application() {
-	cleanup();
-}
-
-void Application::cleanup() {
+Application::~Application() { 
 	glfwDestroyWindow(_window);
-	if (_shaderProgram) glDeleteProgram(_shaderProgram);
 	glfwTerminate();
 }
-
 
 /************************************************************************
  * Initialization
@@ -31,86 +27,37 @@ void Application::cleanup() {
 
 void Application::init(int argc, char **argv) {
 	std::cout << "\033[33m	Initializing Application...\033[0m" << std::endl;
-	checkInput(argc, argv);
+	if (argc != 2)
+		throw inputError("	Usage: ./rc <map_file>");
 	initGLFW();
-	initOpenGL();
-	initShader();
+	_renderer.init(_width, _height);
+	_raycaster = std::make_unique<Raycaster>(argv[1], _width, _height);
 	std::cout << "\033[33m	Application initialized!\033[0m" << std::endl;
 }
 
 void Application::initGLFW() {
 	if (!glfwInit())
-		throw glfwError("GLFW initialization failed");
+		throw glfwError("	GLFW initialization failed");
 
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	_window = glfwCreateWindow(_width, _height, _mapName.c_str(), nullptr, nullptr);
+	_window = glfwCreateWindow(_width, _height, "Ray Caster GPU", nullptr, nullptr);
 	if (!_window)
-		throw glfwError("Window creation failed");
+		throw glfwError("	Window creation failed");
 
 	glfwMakeContextCurrent(_window);
 	glfwSwapInterval(1);
 
-}
-
-void Application::initOpenGL() {
 	// Charger les fonctions OpenGL avec Glad
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-		throw openGlError("   \033[33mFailed to initialize GLAD\033[0m");
+		throw openGlError("	Failed to initialize GLAD");
 	
 	// Configuration OpenGL
 	glViewport(0, 0, _width, _height);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-	glEnable(GL_DEPTH_TEST);
-
-	glCullFace(GL_BACK);
 	glFrontFace(GL_CCW);
-}
-
-void Application::checkInput(int argc, char **argv) {
-	if (argc != 2)
-		throw inputError("Usage: ./rc <map_file>");
-	
-}
-
-static std::string readFile(const char* path) {
-    std::ifstream file(path);
-    if (!file.is_open())
-        throw std::runtime_error(std::string("Cannot open shader file: ") + path);
-
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
-}
-
-void Application::initShader() {
-	const char* vPath = "shaders/vertex.glsl";
-	const char* fPath = "shaders/fragment.glsl";
-	
-	std::string vCode = readFile(vPath);
-	std::string fCode = readFile(fPath);
-	
-	const char* vSrc = vCode.c_str();
-	const char* fSrc = fCode.c_str();
-
-	GLuint vShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vShader, 1, &vSrc, nullptr);
-	glCompileShader(vShader);
-
-	GLuint fShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fShader, 1, &fSrc, nullptr);
-	glCompileShader(fShader);
-	
-	_shaderProgram = glCreateProgram();
-
-	glAttachShader(_shaderProgram, vShader);
-	glAttachShader(_shaderProgram, fShader);
-	glLinkProgram(_shaderProgram);
-
-	glDeleteShader(vShader);
-	glDeleteShader(fShader);
 }
 
 /************************************************************************
@@ -118,16 +65,19 @@ void Application::initShader() {
  * **********************************************************************/
 
 void Application::run() {
-	while (!glfwWindowShouldClose(_window)) {
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	std::cout << std::endl << "\033[33m	Let's play!\033[0m" << std::endl;
+	while (!glfwWindowShouldClose(_window)) {		
 		
 		handleKey();
 		
-		glUseProgram(_shaderProgram);
-		
-		glfwSwapBuffers(_window);
-		glfwPollEvents();		
+		uchar4* devPtr = _renderer.mapPBO();
+        _raycaster->update(devPtr);
+        _renderer.unmapPBO();
+        
+        _renderer.render();
+        
+        glfwSwapBuffers(_window);
+        glfwPollEvents();	
 	}
 }
 
@@ -136,8 +86,47 @@ void Application::run() {
  * **********************************************************************/
 
 void Application::handleKey() {
+	static bool fullscreen = false;
+	static int savedX, savedY, savedW, savedH;
+
 	// --- Escape to close the window ---
-	if (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(_window, true);
+	static bool escWasPressed = false;
+	bool escPressed = glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+
+	if (escPressed && !escWasPressed) {
+		if (fullscreen) {
+			// Revenir en windowed
+			glfwSetWindowMonitor(_window, nullptr, savedX, savedY, savedW, savedH, 0);
+			fullscreen = !fullscreen;
+			_width = savedW; _height = savedH;
+			_renderer.resize(_width, _height);
+			_raycaster->updateFullscreen(_width, _height);
+		}else {
+			glfwSetWindowShouldClose(_window, true);
+		}
 	}
+	escWasPressed = escPressed;
+
+	// --- Fullscreen toggle ---
+	static bool f11WasPressed = false;
+	bool f11Pressed = glfwGetKey(_window, GLFW_KEY_F11) == GLFW_PRESS;
+
+	if (f11Pressed && !f11WasPressed && !fullscreen) {
+		fullscreen = true;
+		if (fullscreen) {
+			// Sauvegarder la position/taille de la fenêtre
+			glfwGetWindowPos(_window, &savedX, &savedY);
+			glfwGetWindowSize(_window, &savedW, &savedH);
+			
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+			glfwSetWindowMonitor(_window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+			_width = mode->width; _height = mode->height;
+			_renderer.resize(_width, _height);
+			_raycaster->updateFullscreen(_width, _height);
+		}
+	}
+	f11WasPressed = f11Pressed;
+	_raycaster->move(_window);
 }
+

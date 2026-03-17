@@ -6,18 +6,21 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/09 16:00:38 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/11 11:36:15 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+CUDA_PREFIX := $(CONDA_PREFIX)/targets/x86_64-linux
 
 # Compilers
 CPP      = g++
 NVCC     = nvcc
 FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes
-NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
+NVFLAGS	 = -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes --extended-lambda
 LDFLAGS  = -L$(CONDA_PREFIX)/lib \
            -L$(CUDA_PREFIX)/lib \
            -lOpenGL -lGLU -lglfw -lGLEW -lcudart
+NVFLAGS += -diag-suppress 550
 
 # Sources
 vpath %.cpp srcs/
@@ -46,6 +49,7 @@ clean: ## Clean object files in the container
 
 fclean: clean ## Clean object files and executable and docker volumes
 	@rm -f $(NAME)
+	@rm -rf objs
 	@echo "\033[35mDeleted everything!\033[0m"
 	
 re: fclean all ## Rebuild
@@ -72,7 +76,7 @@ $(NAME): $(OBJ) $(CUOBJ) $(OBJGLAD)
 $(OBJDIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	@$(CPP) $(FLAGS) -c $< -o $@
-
+	
 # Compile CUDA sources
 $(OBJDIR)/%.o: %.cu
 	@mkdir -p $(@D)

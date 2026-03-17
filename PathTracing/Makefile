@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/09 16:01:43 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/09 17:26:11 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,6 +46,7 @@ clean: ## Clean object files in the container
 
 fclean: clean ## Clean object files and executable and docker volumes
 	@rm -f $(NAME)
+	@rm -rf objs
 	@echo "\033[35mDeleted everything!\033[0m"
 	
 re: fclean all ## Rebuild
