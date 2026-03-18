@@ -6,19 +6,19 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/18 12:28:43 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/18 17:50:13 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-// OpenGL
-#define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <iostream>
+#include <memory>
 
 #include "Exception.hpp"
-#include <iostream>
+#include "BoidSimulation.hpp"
+#include "Renderer.hpp"
+#include "Shader.hpp"
 
 struct GLFWwindow;
 
@@ -33,9 +33,11 @@ class Application {
 		
 	private:
 		GLFWwindow *_window;
-		int _width = 800;
-		int _height = 600;
+		std::unique_ptr<BoidSimulation> _simulation;
+		std::unique_ptr<Renderer> _renderer;
 
-		
+		int _width = 1600;
+		int _height = 1200;
+
 		void initGLFW();
 };

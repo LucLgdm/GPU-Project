@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/04 12:10:37 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/10 15:57:24 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/18 15:49:47 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,31 +119,31 @@ void Renderer::createTextures() {
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-/************************************************************************
- * Rendering
- * **********************************************************************/
+	/************************************************************************
+	 * Rendering
+	 * **********************************************************************/
 
-void Renderer::render() {
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _PBO);
-	
-	glBindTexture(GL_TEXTURE_2D, _texture);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+	void Renderer::render() {
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _PBO);
+		
+		glBindTexture(GL_TEXTURE_2D, _texture);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, _width, _height, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 
-	// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
-	glUseProgram(_shaderProgram);
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, _texture);
-	
-	glUniform1i(glGetUniformLocation(_shaderProgram, "uTexture"), 0);
-	
-	glBindVertexArray(_VAO);
+		// glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		
+		glUseProgram(_shaderProgram);
+		
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _texture);
+		
+		glUniform1i(glGetUniformLocation(_shaderProgram, "uTexture"), 0);
+		
+		glBindVertexArray(_VAO);
 
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-}
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
 
 void Renderer::resize(int width, int height) {
     _width = width;
