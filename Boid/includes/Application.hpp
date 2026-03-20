@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 16:31:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 18:40:06 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,5 +48,7 @@ class Application {
 		bool _fullscreen = false;
 		int _windowedX, _windowedY, _windowedWidth, _windowedHeight;
 		GLFWmonitor *_currentMonitor;
+		
 		void initGLFW();
+		void setCallbacks();
 };

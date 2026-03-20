@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:42 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 16:42:38 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 19:35:35 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,13 @@ BoidSimulation::BoidSimulation(size_t numBoids, int width, int height) : _numBoi
 																_width(width), _height(height) {
 	_boids.reserve(_numBoids);
 	for (size_t i = 0; i < _numBoids; ++i) {
-		_boids.push_back({glm::vec4((static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
-									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
-									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
+		_boids.push_back({glm::vec4((static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 5.0f,
+									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 5.0f,
+									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 5.0f,
 									1.0f),
 						  glm::vec4(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f,
-						 			static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f,
-									static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f,
+						 			static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.3f - 1.0f,
+									static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 1.5f - 1.0f,
 									1.0f)
 		});
 	}

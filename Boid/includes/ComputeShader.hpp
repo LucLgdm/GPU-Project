@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:14 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 16:42:18 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 19:39:45 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,10 @@ class ComputeShader {
 		float _coheWeight = 1.5f;
 		
 		// Life
-		float _maxSpeed = 3.0f;
+		float _maxSpeed = 1.5f;
 		float _minSpeed = 0.01f;
-		float _boundSize = 2.0f;
-		float _turnSpeed = 0.5f;
+		float _boundSize = 10.0f;
+		float _turnSpeed = 3.0f;
 		
 		GLuint _program;
 };

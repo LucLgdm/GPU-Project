@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 18:05:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 19:44:13 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,9 +141,9 @@ void Renderer::initShaders() {
 
 void Renderer::createBuffers() {
 	const int segments = 20;
-	const float radius = 0.5f / 75.0f;
-	const float height = 1.0f / 75.0f;
-	const float baseY = -1.0f / 75.0f;
+	const float radius = 0.75 / 15.0f;
+	const float height = 1.0 / 15.0f;
+	const float baseY = -1.0 / 15.0f;
 
 	const float PI = 3.1415926535f;
 
@@ -259,7 +259,7 @@ void Renderer::initBox() {
  * **********************************************************************/
 
 void Renderer::render(GLuint ssbo, glm::mat4 mvp) {
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glUseProgram(_shaderProgram);

@@ -88,17 +88,16 @@ vec3 applyBoidRules(uint selfIndex, vec3 myPos, vec3 myVel) {
 // =============================
 vec3 boundary(vec3 myPos, vec3 myVel) {
 	// x
-	if (myPos.x > uBoundSize) myVel.x -= uTurnSpeed * uDeltaTime;
-	if (myPos.x < -uBoundSize) myVel.x += uTurnSpeed * uDeltaTime;
+	if (myPos.x > uBoundSize * 0.8) myVel.x -= uTurnSpeed * uDeltaTime;
+	if (myPos.x < -uBoundSize * 0.8) myVel.x += uTurnSpeed * uDeltaTime;
 
 	// y
-	if (myPos.y > uBoundSize) myVel.y -= uTurnSpeed * uDeltaTime;
-	if (myPos.y < -uBoundSize) myVel.y += uTurnSpeed * uDeltaTime;
+	if (myPos.y > uBoundSize * 0.8) myVel.y -= uTurnSpeed * uDeltaTime;
+	if (myPos.y < -uBoundSize * 0.8) myVel.y += uTurnSpeed * uDeltaTime;
 
 	// z
-	if (myPos.z > uBoundSize) myVel.z -= uTurnSpeed * uDeltaTime;
-	if (myPos.z < -uBoundSize) myVel.z += uTurnSpeed * uDeltaTime;
-
+	if (myPos.z > uBoundSize * 0.8) myVel.z -= uTurnSpeed * uDeltaTime;
+	if (myPos.z < -uBoundSize * 0.8) myVel.z += uTurnSpeed * uDeltaTime;
 	return myVel;
 }
 

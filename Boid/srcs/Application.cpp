@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 16:56:11 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 19:22:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ void Application::init() {
 	_simulation = std::make_unique<BoidSimulation>(1000, _width, _height);
 	_renderer = std::make_unique<Renderer>();
 	_renderer->init(_width, _height, 1000);
+	_camera.init(_window, _width, _height);
+	glfwSetWindowUserPointer(_window, this);
 }
 
 void Application::initGLFW() {
@@ -53,7 +55,31 @@ void Application::initGLFW() {
 	glViewport(0, 0, _width, _height);
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glFrontFace(GL_CCW);
+	
+	setCallbacks();
 }
+
+
+void Application::setCallbacks() {
+	// Callbacks for Camera rotation
+	glfwSetMouseButtonCallback(_window, [](GLFWwindow* win, int button, int action, int mods) {
+		Application* app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(win));
+		if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+			if (action == GLFW_PRESS)
+				app->_camera.beginRotate();
+			else if (action == GLFW_RELEASE)
+				app->_camera.endRotate();
+		}
+	});
+
+	glfwSetCursorPosCallback(_window, [](GLFWwindow* win, double xpos, double ypos) {
+		Application* app = reinterpret_cast<Application*>(glfwGetWindowUserPointer(win));
+		app->_camera.processMouseMove(static_cast<float>(xpos), static_cast<float>(ypos));
+	});
+}
+
+
+
 
 /************************************************************************
  * Main loop
@@ -135,6 +161,8 @@ void Application::toggleFullscreen() {
 		// Update viewport and camera aspect ratio
 		glViewport(0, 0, mode->width, mode->height);
 		_camera.updateProjectionMatrix(mode->width, mode->height);
+		glfwSetCursorPos(_window, mode->width / 2.0f, mode->height / 2.0f);
+		_camera.resetMouse(mode->width / 2.0f, mode->height / 2.0f);
 	} else {
 		// Back to windowed mode
 		_currentWidth = _windowedWidth;
@@ -145,5 +173,7 @@ void Application::toggleFullscreen() {
 		// Update viewport and camera aspect ratio
 		glViewport(0, 0, _windowedWidth, _windowedHeight);
 		_camera.updateProjectionMatrix(_windowedWidth, _windowedHeight);
+		glfwSetCursorPos(_window, _windowedWidth / 2.0f, _windowedHeight / 2.0f);
+		_camera.resetMouse(_windowedWidth / 2.0f, _windowedHeight / 2.0f);
 	}
 }
