@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 12:05:21 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 13:36:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,11 @@ void Application::run() {
 		handleKey();
         
 		// Update simulation
+		float ratio = static_cast<float>(_width) / static_cast<float>(_height);
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 mvp = _camera.getProjection(ratio) * _camera.getView() * model;
 		_simulation->update(deltaTime);
-		_renderer->render(_simulation->getSsbo());
+		_renderer->render(_simulation->getSsbo(), mvp);
 		GLenum err = glGetError();
 		if (err != GL_NO_ERROR)
 			std::cout << "OpenGL error: " << err << std::endl;
@@ -77,6 +80,7 @@ void Application::run() {
         glfwPollEvents();	
 	}
 }
+
 
 /************************************************************************
  * Input handling

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 10:14:02 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 13:25:08 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,17 +72,78 @@ void Renderer::initShaders() {
 }
 
 void Renderer::createBuffers() {
-	float vertices[] = {
-		0.0f,			1.0f / 75.0f,  0.0f,
-		-0.3f / 75.0f,	-1.0f / 75.0f, 0.0f,
-		0.3f / 75.0f, 	-1.0f / 75.0f, 0.0f
-	};
+	const int segments = 20;
+	const float radius = 0.3f / 75.0f;
+	const float height = 1.0f / 75.0f;
+	const float baseY = -1.0f / 75.0f;
+
+	const float PI = 3.1415926535f;
+
+	std::vector<float> vertices;
+
+	// ===== Faces latérales =====
+	for (int i = 0; i < segments; ++i)
+	{
+		float angle1 = 2.f * PI * i / segments;
+		float angle2 = 2.f * PI * (i + 1) / segments;
+
+		float x1 = radius * cos(angle1);
+		float z1 = radius * sin(angle1);
+
+		float x2 = radius * cos(angle2);
+		float z2 = radius * sin(angle2);
+
+		// Apex
+		vertices.push_back(0.f);
+		vertices.push_back(height);
+		vertices.push_back(0.f);
+
+		// Base point 1
+		vertices.push_back(x1);
+		vertices.push_back(baseY);
+		vertices.push_back(z1);
+
+		// Base point 2
+		vertices.push_back(x2);
+		vertices.push_back(baseY);
+		vertices.push_back(z2);
+	}
+
+	// ===== Disque de base =====
+	for (int i = 0; i < segments; ++i)
+	{
+		float angle1 = 2.f * PI * i / segments;
+		float angle2 = 2.f * PI * (i + 1) / segments;
+
+		float x1 = radius * cos(angle1);
+		float z1 = radius * sin(angle1);
+
+		float x2 = radius * cos(angle2);
+		float z2 = radius * sin(angle2);
+
+		// Centre base
+		vertices.push_back(0.f);
+		vertices.push_back(baseY);
+		vertices.push_back(0.f);
+
+		// Bord 2
+		vertices.push_back(x2);
+		vertices.push_back(baseY);
+		vertices.push_back(z2);
+
+		// Bord 1
+		vertices.push_back(x1);
+		vertices.push_back(baseY);
+		vertices.push_back(z1);
+	}
+	
+	// ===== OpenGL buffers =====
 	glGenVertexArrays(1, &_VAO);
 	glGenBuffers(1, &_VBO);
 
 	glBindVertexArray(_VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, _VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
@@ -96,16 +157,18 @@ void Renderer::createBuffers() {
  * Rendering
  * **********************************************************************/
 
-void Renderer::render(GLuint ssbo) {
+void Renderer::render(GLuint ssbo, glm::mat4 mvp) {
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glUseProgram(_shaderProgram);
+	GLint uniform_loc = glGetUniformLocation(_shaderProgram, "uMVP");
+	glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mvp));
 	
 	glBindVertexArray(_VAO);
 
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, ssbo);
-	glDrawArraysInstanced(GL_TRIANGLES, 0, 3, _numBoids);
+	glDrawArraysInstanced(GL_TRIANGLES, 0, 120, _numBoids);
 }
 
 void Renderer::resize(int width, int height) {

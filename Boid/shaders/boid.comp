@@ -16,10 +16,76 @@ layout(std430, binding = 0) buffer BoidBuffer {
 // Uniforms
 uniform float uDeltaTime;
 uniform uint uNumBoids;
+uniform float uMaxSpeed;
+uniform float uMinSpeed;
+
+uniform float uSeparationRadius;
+uniform float uSeparationWeight;
+
+uniform float uAlignementRadius;
+uniform float uAlignementWeight;
+
+uniform float uCohesionRadius;
+uniform float uCohesionWeight;
+
 
 void main() {
-    // Index du boid courant
-    uint index = gl_GlobalInvocationID.x;
-    if (index >= uNumBoids) return;
-    boids[index].position += boids[index].velocity * uDeltaTime;
+	// Index du boid courant
+	uint index = gl_GlobalInvocationID.x;
+	if (index >= uNumBoids) return;
+
+	int countSep = 0, countAlign = 0, countCohe = 0;
+	vec3 separation = vec3(0.0);
+	vec3 alignement = vec3(0.0);
+	vec3 cohesion = vec3(0.0);
+
+	vec3 myPos = boids[index].position.xyz;
+	vec3 myVel = boids[index].velocity.xyz;
+
+	for(int i = 0; i < uNumBoids; i++) {
+		if (i == index) continue;
+
+		float dist = distance(myPos, boids[i].position.xyz);
+		if (dist < uSeparationRadius) {
+			vec3 diff = myPos - boids[i].position.xyz;
+			separation += diff / dist;
+			countSep++;
+		}
+
+		if (dist < uAlignementRadius) {
+			alignement += boids[i].velocity.xyz;
+			countAlign++;
+		}
+
+		if (dist < uCohesionRadius) {
+			cohesion += boids[i].position.xyz;
+			countCohe++;
+		}
+	}
+
+	if (countSep > 0)
+		myVel += normalize(separation) * uSeparationWeight;
+
+	if (countAlign > 0) {
+		alignement /= countAlign;
+		myVel += normalize(alignement) * uAlignementWeight;
+	}
+
+	if (countCohe > 0) {
+		cohesion /= countCohe;
+		vec3 dirToCenter = cohesion - myPos;
+		myVel += normalize(dirToCenter) * uCohesionWeight;
+	}
+
+
+	float speed = length(myVel);
+	if (speed > uMaxSpeed)
+		myVel = normalize(myVel) * uMaxSpeed;
+	if (speed < uMinSpeed)
+		myVel = normalize(myVel) * uMinSpeed;
+
+
+	myPos += myVel * uDeltaTime;
+	boids[index].position.xyz = myPos;
+	boids[index].velocity.xyz = myVel;
 }

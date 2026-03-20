@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:25:40 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/18 17:40:39 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 13:22:22 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,13 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 #include "Exception.hpp"
 #include <fstream>
 #include <sstream>
+#include <vector>
 
 class Renderer {
 	public:
@@ -31,8 +34,10 @@ class Renderer {
 		void initShaders();
 		void createBuffers();
 		
-		void render(GLuint);
+		void render(GLuint, glm::mat4);
 		void resize(int, int);
+
+		const GLuint& getShaderProg() const { return _shaderProgram; };
 
 	private:
 		int _width;
