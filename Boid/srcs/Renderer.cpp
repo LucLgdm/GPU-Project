@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 13:25:08 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 17:10:46 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,7 @@ void Renderer::createBuffers() {
  * **********************************************************************/
 
 void Renderer::render(GLuint ssbo, glm::mat4 mvp) {
-	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+	glClearColor(0.1f, 0.1, 0.1, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glUseProgram(_shaderProgram);
@@ -171,12 +171,4 @@ void Renderer::render(GLuint ssbo, glm::mat4 mvp) {
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 120, _numBoids);
 }
 
-void Renderer::resize(int width, int height) {
-    _width = width;
-    _height = height;
-       
-	glViewport(0, 0, _width, _height);
-    // Recréer à la bonne taille
-    createBuffers();
-}
 

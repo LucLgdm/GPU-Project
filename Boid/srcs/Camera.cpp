@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 12:11:43 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 16:43:14 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 17:09:40 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,4 +37,38 @@ glm::mat4 Camera::getProjection(float aspectRatio) {
 void Camera::updateProjectionMatrix(int width, int height) {
 			float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 			_projectionMatrix = glm::perspective(glm::radians(30.0f), aspectRatio, 0.1f, 3000.0f);
+}
+
+void Camera::update(GLFWwindow *window) {
+	// Mouse delta
+	double mouseX, mouseY;
+	glfwGetCursorPos(window, &mouseX, &mouseY);
+	float deltaX = static_cast<float>(mouseX) - _lastX;
+	float deltaY = _lastY - static_cast<float>(mouseY);
+	_lastX = static_cast<float>(mouseX);
+	_lastY = static_cast<float>(mouseY);
+
+	_yaw   += deltaX * _sensitivity;
+	_pitch += deltaY * _sensitivity;
+	_pitch  = glm::clamp(_pitch, -89.0f, 89.0f);
+
+	// Recalculate forward
+	glm::vec3 forward;
+	forward.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+	forward.y = sin(glm::radians(_pitch));
+	forward.z = sin(glm::radians(_yaw)) * cos(glm::radians(_pitch));
+	forward   = normalize(forward);
+
+	glm::vec3 right = normalize(cross(forward, glm::vec3(0, 1, 0)));
+
+	// WASD
+	for (auto &keyPair : _keys)
+		keyPair.second.update(glfwGetKey(window, keyPair.first) == GLFW_PRESS);
+
+	if (_keys[GLFW_KEY_W].isDown) _eye += forward * _moveSpeed;
+	if (_keys[GLFW_KEY_S].isDown) _eye -= forward * _moveSpeed;
+	if (_keys[GLFW_KEY_A].isDown) _eye -= right   * _moveSpeed;
+	if (_keys[GLFW_KEY_D].isDown) _eye += right   * _moveSpeed;
+
+	_target = _eye + forward;
 }

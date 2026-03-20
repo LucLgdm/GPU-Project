@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 16:43:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 16:56:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ void Application::run() {
 		float deltaTime = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
 		handleKey();
+		_camera.update(_window);
         
 		// Update simulation
 		float ratio = static_cast<float>(_width) / static_cast<float>(_height);
