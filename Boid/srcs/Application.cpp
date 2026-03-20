@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 13:36:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 16:43:54 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,21 +87,62 @@ void Application::run() {
  * **********************************************************************/
 
 void Application::handleKey() {
-	static bool fullscreen = false;
-	static int savedX, savedY, savedW, savedH;
+	static bool f11Pressed = false;
 
-	// --- Escape to close the window ---
-	static bool escWasPressed = false;
-	bool escPressed = glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS;
+	// --- Fullscreen toggle ---
+	bool f11Now = (glfwGetKey(_window, GLFW_KEY_F11) == GLFW_PRESS);
+	if (f11Now && !f11Pressed && !_fullscreen) {
+		toggleFullscreen();   // ta fonction qui gère le passage full screen
+	}
+	f11Pressed = f11Now;
 
-	if (escPressed && !escWasPressed) {
-		if (fullscreen) {
-			// Revenir en windowed
-			glfwSetWindowMonitor(_window, nullptr, savedX, savedY, savedW, savedH, 0);
-			fullscreen = !fullscreen;
-		}else {
+		// --- Escape to quit if not in fullscreen mode ---
+	static bool escPressed = false;
+	bool escNow = (glfwGetKey(_window, GLFW_KEY_ESCAPE) == GLFW_PRESS);
+
+	if (escNow && !escPressed) {
+		GLFWmonitor* monitor = glfwGetWindowMonitor(_window);
+
+		if (monitor) {
+			toggleFullscreen();
+		} else {
 			glfwSetWindowShouldClose(_window, true);
 		}
 	}
-	escWasPressed = escPressed;
+	escPressed = escNow;
+
+	 
+}
+
+void Application::toggleFullscreen() {
+	_fullscreen = !_fullscreen;
+	
+	if (_fullscreen) {
+		// Save position and size of the window
+		glfwGetWindowPos(_window, &_windowedX, &_windowedY);
+		glfwGetWindowSize(_window, &_windowedWidth, &_windowedHeight);
+		
+		// Fullscreen
+		_currentMonitor = glfwGetPrimaryMonitor();
+		const GLFWvidmode* mode = glfwGetVideoMode(_currentMonitor);
+		_currentWidth = mode->width;
+		_currentHeight = mode->height;
+		
+		glfwSetWindowMonitor(_window, _currentMonitor, 0, 0, mode->width,
+				mode->height, mode->refreshRate);
+
+		// Update viewport and camera aspect ratio
+		glViewport(0, 0, mode->width, mode->height);
+		_camera.updateProjectionMatrix(mode->width, mode->height);
+	} else {
+		// Back to windowed mode
+		_currentWidth = _windowedWidth;
+		_currentHeight = _windowedHeight;
+		
+		glfwSetWindowMonitor(_window, nullptr, _windowedX, _windowedY, _width, _height, 0);
+
+		// Update viewport and camera aspect ratio
+		glViewport(0, 0, _windowedWidth, _windowedHeight);
+		_camera.updateProjectionMatrix(_windowedWidth, _windowedHeight);
+	}
 }

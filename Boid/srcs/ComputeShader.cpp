@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 15:15:09 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 15:26:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,11 @@ void ComputeShader::dispatch(uint numBoids, float deltaTime) {
 	glUniform1f(uniform_loc, _maxSpeed);
 	uniform_loc = glGetUniformLocation(_program, "uMinSpeed");
 	glUniform1f(uniform_loc, _minSpeed);
+		// Boundaries
+	uniform_loc = glGetUniformLocation(_program, "uBoundSize");
+	glUniform1f(uniform_loc, _boundSize);
+	uniform_loc = glGetUniformLocation(_program, "uTurnSpeed");
+	glUniform1f(uniform_loc, _turnSpeed);
 	
 	// Boid rules
 	uniform_loc = glGetUniformLocation(_program, "uSeparationRadius");

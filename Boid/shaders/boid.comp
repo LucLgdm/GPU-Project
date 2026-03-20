@@ -1,23 +1,22 @@
 #version 430 core
 
-// Taille du work group
 layout(local_size_x = 256, local_size_y = 1, local_size_z = 1) in;
 
-// Ton struct et ton SSBO
 struct Boid {
-    vec4 position;
-    vec4 velocity;
+	vec4 position;
+	vec4 velocity;
 };
 
 layout(std430, binding = 0) buffer BoidBuffer {
-    Boid boids[];
+	Boid boids[];
 };
 
-// Uniforms
 uniform float uDeltaTime;
-uniform uint uNumBoids;
+uniform uint  uNumBoids;
 uniform float uMaxSpeed;
 uniform float uMinSpeed;
+uniform float uBoundSize;
+uniform float uTurnSpeed;
 
 uniform float uSeparationRadius;
 uniform float uSeparationWeight;
@@ -29,63 +28,107 @@ uniform float uCohesionRadius;
 uniform float uCohesionWeight;
 
 
-void main() {
-	// Index du boid courant
-	uint index = gl_GlobalInvocationID.x;
-	if (index >= uNumBoids) return;
-
+// =============================
+// Boids rules
+// =============================
+vec3 applyBoidRules(uint selfIndex, vec3 myPos, vec3 myVel) {
 	int countSep = 0, countAlign = 0, countCohe = 0;
 	vec3 separation = vec3(0.0);
 	vec3 alignement = vec3(0.0);
-	vec3 cohesion = vec3(0.0);
+	vec3 cohesion   = vec3(0.0);
 
-	vec3 myPos = boids[index].position.xyz;
-	vec3 myVel = boids[index].velocity.xyz;
+	for (uint i = 0; i < uNumBoids; ++i) {
+		if (i == selfIndex) continue;
 
-	for(int i = 0; i < uNumBoids; i++) {
-		if (i == index) continue;
+		vec3 otherPos = boids[i].position.xyz;
+		float dist = distance(myPos, otherPos);
 
-		float dist = distance(myPos, boids[i].position.xyz);
+		// --- Separation ---
 		if (dist < uSeparationRadius) {
-			vec3 diff = myPos - boids[i].position.xyz;
+			vec3 diff = myPos - otherPos;
 			separation += diff / dist;
 			countSep++;
 		}
 
+		// --- Alignment ---
 		if (dist < uAlignementRadius) {
 			alignement += boids[i].velocity.xyz;
 			countAlign++;
 		}
 
+		// --- Cohesion ---
 		if (dist < uCohesionRadius) {
-			cohesion += boids[i].position.xyz;
+			cohesion += otherPos;
 			countCohe++;
 		}
 	}
 
+	vec3 deltaVel = vec3(0.0);
+
 	if (countSep > 0)
-		myVel += normalize(separation) * uSeparationWeight;
+		deltaVel += normalize(separation) * uSeparationWeight;
 
 	if (countAlign > 0) {
 		alignement /= countAlign;
-		myVel += normalize(alignement) * uAlignementWeight;
+		deltaVel += normalize(alignement) * uAlignementWeight;
 	}
 
 	if (countCohe > 0) {
 		cohesion /= countCohe;
 		vec3 dirToCenter = cohesion - myPos;
-		myVel += normalize(dirToCenter) * uCohesionWeight;
+		deltaVel += normalize(dirToCenter) * uCohesionWeight;
 	}
 
+	return deltaVel;
+}
 
+
+// =============================
+// Boundary
+// =============================
+vec3 boundary(vec3 myPos, vec3 myVel) {
+	// x
+	if (myPos.x > uBoundSize) myVel.x -= uTurnSpeed * uDeltaTime;
+	if (myPos.x < -uBoundSize) myVel.x += uTurnSpeed * uDeltaTime;
+
+	// y
+	if (myPos.y > uBoundSize) myVel.y -= uTurnSpeed * uDeltaTime;
+	if (myPos.y < -uBoundSize) myVel.y += uTurnSpeed * uDeltaTime;
+
+	// z
+	if (myPos.z > uBoundSize) myVel.z -= uTurnSpeed * uDeltaTime;
+	if (myPos.z < -uBoundSize) myVel.z += uTurnSpeed * uDeltaTime;
+
+	return myVel;
+}
+
+// =============================
+// Main
+// =============================
+void main()
+{
+	uint index = gl_GlobalInvocationID.x;
+	if (index >= uNumBoids) return;
+
+	vec3 myPos = boids[index].position.xyz;
+	vec3 myVel = boids[index].velocity.xyz;
+
+	// Apply flocking behaviour
+	myVel += applyBoidRules(index, myPos, myVel);
+
+	// Clamp speed
 	float speed = length(myVel);
 	if (speed > uMaxSpeed)
 		myVel = normalize(myVel) * uMaxSpeed;
-	if (speed < uMinSpeed)
+	else if (speed < uMinSpeed)
 		myVel = normalize(myVel) * uMinSpeed;
 
+	// Boundaries
+	myVel = boundary(myPos, myVel);
 
+	// Integrate
 	myPos += myVel * uDeltaTime;
+
 	boids[index].position.xyz = myPos;
 	boids[index].velocity.xyz = myVel;
 }

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 12:11:43 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 13:25:59 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 16:43:14 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,11 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-Camera::Camera(): _eye(glm::vec3(1.0f, 0.0f, 3.0f)),
+Camera::Camera(): _eye(glm::vec3(0.0f, 0.0f, 15.0f)),
 					_target(glm::vec3(0.0f, 0.0f, 0.0f)),
-					_up(glm::vec3(0.0f, 1.0f, 0.0f)) { }
+					_up(glm::vec3(0.0f, 1.0f, 0.0f)),
+					_projectionMatrix(glm::perspective(glm::radians(30.0f), 1600.0f/1200.0f, 0.1f, 3000.0f))
+					{ }
 
 Camera::~Camera() { }
 
@@ -29,5 +31,10 @@ glm::mat4 Camera::getView() {
 }
 
 glm::mat4 Camera::getProjection(float aspectRatio) {
-	return glm::perspective(glm::radians(30.0f), aspectRatio, 0.1f, 3000.0f);
+	return _projectionMatrix;
+}
+
+void Camera::updateProjectionMatrix(int width, int height) {
+			float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
+			_projectionMatrix = glm::perspective(glm::radians(30.0f), aspectRatio, 0.1f, 3000.0f);
 }
