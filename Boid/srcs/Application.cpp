@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/18 17:42:43 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 12:05:21 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,12 +61,14 @@ void Application::initGLFW() {
 
 void Application::run() {
 	std::cout << "\033[33m	Let's play!\033[0m" << std::endl;
-	while (!glfwWindowShouldClose(_window)) {		
-		
+	float currentTime = glfwGetTime();
+	while (!glfwWindowShouldClose(_window)) {
+		float deltaTime = glfwGetTime() - currentTime;
+		currentTime = glfwGetTime();
 		handleKey();
         
 		// Update simulation
-		// _simulation->update(0.016f); // ~60 FPS
+		_simulation->update(deltaTime);
 		_renderer->render(_simulation->getSsbo());
 		GLenum err = glGetError();
 		if (err != GL_NO_ERROR)

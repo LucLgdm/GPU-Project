@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/18 17:51:21 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 10:14:02 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,9 +73,9 @@ void Renderer::initShaders() {
 
 void Renderer::createBuffers() {
 	float vertices[] = {
-		0.0f,			1.0f / 50.0f,  0.0f,
-		-0.5f / 50.0f,	-1.0f / 50.0f, 0.0f,
-		0.5f / 50.0f, 	-1.0f / 50.0f, 0.0f
+		0.0f,			1.0f / 75.0f,  0.0f,
+		-0.3f / 75.0f,	-1.0f / 75.0f, 0.0f,
+		0.3f / 75.0f, 	-1.0f / 75.0f, 0.0f
 	};
 	glGenVertexArrays(1, &_VAO);
 	glGenBuffers(1, &_VBO);
@@ -97,7 +97,7 @@ void Renderer::createBuffers() {
  * **********************************************************************/
 
 void Renderer::render(GLuint ssbo) {
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	glUseProgram(_shaderProgram);

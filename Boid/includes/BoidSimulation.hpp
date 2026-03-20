@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/18 17:17:44 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/20 12:01:35 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 #include <vector>
 #include <cstdlib>
 #include <iostream>
-
+#include "ComputeShader.hpp"
 
 // On utilise des vec4 et non des vec3 car le glsl a un padding de 4
 // Avec un vec3, le C++ voit 12 bytes + 12 bytes = 24 bytes
@@ -48,6 +48,6 @@ class BoidSimulation {
 		size_t _numBoids;
 
 		GLuint _ssbo; // Shader Storage Buffer Object
-
+		ComputeShader _computeShader;
 		void initSsbo();
 };
