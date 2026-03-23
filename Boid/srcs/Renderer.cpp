@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 12:42:22 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 15:22:32 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ void Renderer::init(int width, int height, int numBoid) {
 	initShaders();
 	createBuffers();
 	initBox();
+	initSphere();
 }
 
 static std::string readFile(const char* path) {
@@ -253,12 +254,66 @@ void Renderer::initBox() {
 	glBindVertexArray(0);
 }
 
+void Renderer::initSphere() {
+	float radius = 4.0f;
+	int stacks = 32, sectors = 64;
+	std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    const float PI = 3.1415926535f;
+
+	// Sommets
+	for(int i = 0; i < stacks + 1; i++) {
+		float phi = PI * i / stacks;
+		float r = radius * sin(phi);
+		float y = radius * cos(phi);
+
+		for (int j = 0; j < sectors + 1; j++) {
+			float theta = 2 * PI * j / sectors;
+			float x = r * cos(theta);
+			float z = r * sin(theta);
+
+			vertices.push_back(x); vertices.push_back(y); vertices.push_back(z);
+		}
+	}	
+	
+	// Indices
+	for(int i = 0; i < stacks; i++) {
+		int k1 = i * (sectors + 1);
+		int k2 = k1 + sectors + 1;
+
+		for(int j = 0; j < sectors; j++, k1++, k2++) {
+			indices.push_back(k1); indices.push_back(k2); indices.push_back(k1 + 1);
+
+			indices.push_back(k1 + 1); indices.push_back(k2); indices.push_back(k2 + 1);
+		}
+	}
+	_sphereIndexCount = indices.size();
+	
+	// ===== OpenGL buffers =====
+	glGenVertexArrays(1, &_SphereVAO);
+	glGenBuffers(1, &_SphereVBO);
+	
+	glBindVertexArray(_SphereVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, _SphereVBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size()* sizeof(float), vertices.data(), GL_STATIC_DRAW);
+	
+	glGenBuffers(1, &_SphereEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _SphereEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);	
+}
 
 /************************************************************************
  * Rendering
  * **********************************************************************/
 
-void Renderer::render(GLuint ssbo, glm::mat4 mvp) {
+void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& spheres) {
 	glClearColor(0.192f, 0.302f, 0.475f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -277,6 +332,21 @@ void Renderer::render(GLuint ssbo, glm::mat4 mvp) {
 	
 	glBindVertexArray(_BoxVAO);
 	glDrawArrays(GL_LINES, 0, 24);
+
+	for (const auto& sphere : spheres) {
+		glm::vec3 pos = glm::vec3(sphere.positionRadius);
+		float radius = sphere.positionRadius.w;
+		
+		glm::mat4 sphereModel = glm::translate(glm::mat4(1.0f), pos);
+		sphereModel = glm::scale(sphereModel, glm::vec3(radius));
+		glm::mat4 sphereMVP = mvp * sphereModel;
+		
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uMVP");
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(sphereMVP));
+		
+		glBindVertexArray(_SphereVAO);
+		glDrawElements(GL_TRIANGLES, _sphereIndexCount, GL_UNSIGNED_INT, 0);
+	}
 }
 
 

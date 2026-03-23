@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 12:23:42 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 15:37:07 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ struct Boid {
 	glm::vec4 velocity;
 };
 
+struct Sphere {
+	glm::vec4 positionRadius;
+};
 
 class BoidSimulation {
 	public:
@@ -44,6 +47,12 @@ class BoidSimulation {
 
 		void updateBoundSize(float size) {_computeShader.updateBoundSize(size); };
 
+
+		void addSphere(glm::vec3, float);
+		void updateSphereSsbo();
+
+		const std::vector<Sphere>& getSphere() const {return _sphere; };
+		
 	private:
 		int _width;
 		int _height;
@@ -53,5 +62,10 @@ class BoidSimulation {
 
 		GLuint _ssbo; // Shader Storage Buffer Object
 		ComputeShader _computeShader;
+
+		std::vector<Sphere> _sphere;
+		GLuint _ssboSphere;
+
 		void initSsbo();
+		void initSphereSsbo();
 };
