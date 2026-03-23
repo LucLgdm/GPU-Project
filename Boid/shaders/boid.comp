@@ -7,6 +7,15 @@ struct Boid {
 	vec4 velocity;
 };
 
+struct Cube {
+    vec4 min;
+    vec4 max;
+};
+
+layout(std430, binding = 2) readonly buffer CubeBuffer {
+    Cube cubes[];
+};
+
 layout(std430, binding = 1) readonly buffer SphereBuffer {
     vec4 spheres[]; // xyz = position, w = rayon
 };
@@ -32,8 +41,11 @@ uniform float uCohesionRadius;
 uniform float uCohesionWeight;
 
 uniform uint uNumSpheres;
+uniform uint uNumCubes;
+
 uniform float uObstacleWeight;
 uniform float uAvoidanceMargin;
+
 
 // =============================
 // Boids rules
@@ -131,6 +143,23 @@ void main()
 			vec3 diff = myPos - spherePos;
 			float strength = (sphereRadius + uAvoidanceMargin - dist) / uAvoidanceMargin;
 			myVel += normalize(diff) * uObstacleWeight * strength;
+		}
+	}
+
+	for (int i = 0; i < uNumCubes; i++) {
+		vec3 closest = clamp(myPos, cubes[i].min.xyz, cubes[i].max.xyz);
+		vec3 diff = myPos - closest;
+		float dist = length(diff);
+
+		if (dist < uAvoidanceMargin) {
+			float strength = (uAvoidanceMargin - dist) / uAvoidanceMargin;
+			myVel += normalize(diff) * uObstacleWeight * strength;
+		}
+
+		if (dist < 0.0001) {
+			// Boid coincé dedans, pousse vers le centre de la boîte
+			vec3 center = (cubes[i].min.xyz + cubes[i].max.xyz) * 0.5;
+			myVel += normalize(myPos - center) * uObstacleWeight;
 		}
 	}
 

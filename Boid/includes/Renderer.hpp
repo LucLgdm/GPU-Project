@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:25:40 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:19:24 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 19:15:50 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,9 @@ class Renderer {
 		void createBuffers();
 		void initBox();
 		void initSphere();
+		void initCube();
 		
-		void render(GLuint, glm::mat4, const std::vector<Sphere>&);
+		void render(GLuint, glm::mat4, const std::vector<Sphere>&, const std::vector<Cube>&);
 		void resize(int, int);
 
 		void updateBoxSize(float size) {_boxSize = size; };
@@ -52,7 +53,7 @@ class Renderer {
 		int _width;
 		int _height;
 		int _numBoids;
-		float _boxSize = 50.0f;
+		float _boxSize = 5.0f;
 		
 		// OpenGL parameters
 		GLuint	_shaderProgram;
@@ -65,4 +66,7 @@ class Renderer {
 
 		GLuint _SphereVAO, _SphereVBO, _SphereEBO;
 		int _sphereIndexCount;
+
+		GLuint _CubeVAO, _CubeVBO, _CubeEBO;
+		int _cubeIndexCount;
 };

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:43:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 19:08:08 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,8 @@ void ComputeShader::init(const char *path) {
 	glDeleteShader(cShader);
 }
 
-void ComputeShader::dispatch(uint numBoids, float deltaTime, GLuint sphereSsbo, int numSpheres) {
+void ComputeShader::dispatch(uint numBoids, float deltaTime, GLuint sphereSsbo, int numSpheres,
+								int numCubes) {
 	glUseProgram(_program);
 	GLint uniform_loc;
 	// Differents parameters
@@ -84,6 +85,8 @@ void ComputeShader::dispatch(uint numBoids, float deltaTime, GLuint sphereSsbo, 
 	// Sphere
 	uniform_loc = glGetUniformLocation(_program, "uNumSpheres");
 	glUniform1ui(uniform_loc, numSpheres);
+	uniform_loc = glGetUniformLocation(_program, "uNumCubes");
+	glUniform1ui(uniform_loc, numCubes);
 	uniform_loc = glGetUniformLocation(_program, "uObstacleWeight");
 	glUniform1f(uniform_loc, _obstacleWeight);
 	uniform_loc = glGetUniformLocation(_program, "uAvoidanceMargin");

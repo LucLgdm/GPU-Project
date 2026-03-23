@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:37:07 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 18:53:37 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,12 @@ struct Sphere {
 	glm::vec4 positionRadius;
 };
 
+// A cube is an AABB (Axis-Aligned Bounding-Box)
+struct Cube {
+	glm::vec4 min;
+	glm::vec4 max;
+};
+
 class BoidSimulation {
 	public:
 		BoidSimulation(size_t numBoids, int width, int height);
@@ -44,14 +50,16 @@ class BoidSimulation {
 		const std::vector<Boid>& getBoids() const { return _boids; };
 		const GLuint& getSsbo() const { return _ssbo; };
 		ComputeShader& getCS()	{return _computeShader; };
-
+		const std::vector<Sphere>& getSphere() const {return _sphere; };
+		const std::vector<Cube>& getCube() const {return _cube; };
+		
 		void updateBoundSize(float size) {_computeShader.updateBoundSize(size); };
-
 
 		void addSphere(glm::vec3, float);
 		void updateSphereSsbo();
 
-		const std::vector<Sphere>& getSphere() const {return _sphere; };
+		void addCube(glm::vec4, glm::vec4);
+		void updateCubeSsbo();
 		
 	private:
 		int _width;
@@ -66,6 +74,10 @@ class BoidSimulation {
 		std::vector<Sphere> _sphere;
 		GLuint _ssboSphere;
 
+		std::vector<Cube> _cube;
+		GLuint _ssboCube;
+
 		void initSsbo();
 		void initSphereSsbo();
+		void initCubeSsbo();
 };

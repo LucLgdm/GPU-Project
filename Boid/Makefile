@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/23 10:42:29 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/23 20:05:30 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ DEP      = $(OBJ:.o=.d)
 NAME     = Boids
 
 all: $(NAME) ## Compile and link in the container
+	./$(NAME)
 
 clean: ## Clean object files in the container
 	@rm -rf $(OBJDIR)/* $(OBJDIR)/**/*

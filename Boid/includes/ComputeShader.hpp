@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:14 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 16:08:27 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 20:06:25 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class ComputeShader {
 		~ComputeShader();
 
 		void init(const char*);
-		void dispatch(uint, float, GLuint, int);
+		void dispatch(uint, float, GLuint, int, int);
 
 		void updateBoundSize(float size) {_boundSize = size; };
 
@@ -70,8 +70,8 @@ class ComputeShader {
 		// Life
 		float _maxSpeed = 13.0f;
 		float _minSpeed = 0.01f;
-		float _boundSize = 50.0f;
-		float _turnSpeed = 20.0f;
+		float _boundSize = 5.0f;
+		float _turnSpeed = 50.0f;
 
 		// Obstacles
 		float _obstacleWeight = 70.0f;

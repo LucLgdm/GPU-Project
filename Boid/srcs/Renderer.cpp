@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:56:49 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 20:04:19 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,7 @@ void Renderer::init(int width, int height, int numBoid) {
 	_numBoids = numBoid;
 	initShaders();
 	createBuffers();
-	initBox();
-	initSphere();
+	initBox(); initSphere(); initCube();
 }
 
 static std::string readFile(const char* path) {
@@ -255,14 +254,14 @@ void Renderer::initBox() {
 }
 
 void Renderer::initSphere() {
-	float radius = 2.0f;
+	float radius = 0.5f;
 	int stacks = 32, sectors = 64;
 	std::vector<float> vertices;
-    std::vector<unsigned int> indices;
+	std::vector<unsigned int> indices;
 
-    const float PI = 3.1415926535f;
+	const float PI = 3.1415926535f;
 
-	// Sommets
+	// Sommets + normales
 	for(int i = 0; i < stacks + 1; i++) {
 		float phi = PI * i / stacks;
 		float r = radius * sin(phi);
@@ -273,7 +272,11 @@ void Renderer::initSphere() {
 			float x = r * cos(theta);
 			float z = r * sin(theta);
 
+			// Position
 			vertices.push_back(x); vertices.push_back(y); vertices.push_back(z);
+
+			// Normale (position normalisée)
+			vertices.push_back(x / radius); vertices.push_back(y / radius); vertices.push_back(z / radius);
 		}
 	}	
 	
@@ -284,7 +287,6 @@ void Renderer::initSphere() {
 
 		for(int j = 0; j < sectors; j++, k1++, k2++) {
 			indices.push_back(k1); indices.push_back(k2); indices.push_back(k1 + 1);
-
 			indices.push_back(k1 + 1); indices.push_back(k2); indices.push_back(k2 + 1);
 		}
 	}
@@ -302,21 +304,106 @@ void Renderer::initSphere() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _SphereEBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	// Position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+
+	// Normales
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);	
+}
+
+void Renderer::initCube() {
+	float s = 0.5f;
+	
+	float vertices[] = {
+		// ===== Face avant (normale : 0,0,1) =====
+		-s,-s, s,  0,0,1,
+		s,-s, s,  0,0,1,
+		s, s, s,  0,0,1,
+		-s, s, s,  0,0,1,
+
+		// ===== Face arrière (0,0,-1) =====
+		-s,-s,-s,  0,0,-1,
+		-s, s,-s,  0,0,-1,
+		s, s,-s,  0,0,-1,
+		s,-s,-s,  0,0,-1,
+
+		// ===== Face gauche (-1,0,0) =====
+		-s,-s,-s, -1,0,0,
+		-s,-s, s, -1,0,0,
+		-s, s, s, -1,0,0,
+		-s, s,-s, -1,0,0,
+
+		// ===== Face droite (1,0,0) =====
+		s,-s,-s,  1,0,0,
+		s, s,-s,  1,0,0,
+		s, s, s,  1,0,0,
+		s,-s, s,  1,0,0,
+
+		// ===== Face haut (0,1,0) =====
+		-s, s,-s,  0,1,0,
+		-s, s, s,  0,1,0,
+		s, s, s,  0,1,0,
+		s, s,-s,  0,1,0,
+
+		// ===== Face bas (0,-1,0) =====
+		-s,-s,-s,  0,-1,0,
+		s,-s,-s,  0,-1,0,
+		s,-s, s,  0,-1,0,
+		-s,-s, s,  0,-1,0
+	};
+
+	unsigned int indices[] = {
+		0,1,2,  0,2,3,
+		4,5,6,  4,6,7,
+		8,9,10, 8,10,11,
+		12,13,14, 12,14,15,
+		16,17,18, 16,18,19,
+		20,21,22, 20,22,23
+	};
+
+	_cubeIndexCount = sizeof(indices) / sizeof(unsigned int);
+
+	// ===== OpenGL =====
+	glGenVertexArrays(1, &_CubeVAO);
+	glGenBuffers(1, &_CubeVBO);
+	glGenBuffers(1, &_CubeEBO);
+
+	glBindVertexArray(_CubeVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _CubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _CubeEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	// Position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Normale
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
 }
 
 /************************************************************************
  * Rendering
  * **********************************************************************/
 
-void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& spheres) {
+void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& spheres,
+						const std::vector<Cube>& cubes) {
 	glClearColor(0.192f, 0.302f, 0.475f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	
+	
+	// Boid
 	glUseProgram(_shaderProgram);
 	GLint uniform_loc = glGetUniformLocation(_shaderProgram, "uMVP");
 	glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mvp));
@@ -327,13 +414,25 @@ void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& sph
 	glDrawArraysInstanced(GL_TRIANGLES, 0, 120, _numBoids);
 
 	glUseProgram(_boxShaderProgram);
+	
+	// Light
+	glm::vec3 light = glm::vec3(10.0f, 5.0f, 10.0f);
+	uniform_loc = glGetUniformLocation(_boxShaderProgram, "uLightDir");
+	glUniform3f(uniform_loc, light.x, light.y, light.z);
+	
+	// Box
+	glm::mat4 model = glm::mat4(1.0f);
 	uniform_loc = glGetUniformLocation(_boxShaderProgram, "uMVP");
 	glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mvp));
+	uniform_loc = glGetUniformLocation(_boxShaderProgram, "uModel");
+	glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(model));
 	
 	glBindVertexArray(_BoxVAO);
 	glDrawArrays(GL_LINES, 0, 24);
 
+	// Sphere
 	for (const auto& sphere : spheres) {
+		glm::vec3 col = glm::vec3(0.9f, 0.2f, 0.2f);
 		glm::vec3 pos = glm::vec3(sphere.positionRadius);
 		float radius = sphere.positionRadius.w;
 		
@@ -343,9 +442,34 @@ void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& sph
 		
 		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uMVP");
 		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(sphereMVP));
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uModel");
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(sphereModel));
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uColor");
+		glUniform3f(uniform_loc, col.x, col.y, col.z);
 		
 		glBindVertexArray(_SphereVAO);
 		glDrawElements(GL_TRIANGLES, _sphereIndexCount, GL_UNSIGNED_INT, 0);
+	}
+
+	// Cube
+	for (const auto& cube : cubes) {
+		glm::vec3 col = glm::vec3(0.2f, 0.2f, 0.9f);
+		glm::vec3 center = (glm::vec3(cube.min) + glm::vec3(cube.max)) * 0.5f;
+		glm::vec3 size   = glm::vec3(cube.max) - glm::vec3(cube.min);
+		
+		glm::mat4 cubeModel = glm::translate(glm::mat4(1.0f), center);
+		cubeModel = glm::scale(cubeModel, size);
+		glm::mat4 cubeMVP = mvp * cubeModel;
+
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uMVP");
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(cubeMVP));
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uModel");
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(cubeModel));
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uColor");
+		glUniform3f(uniform_loc, col.x, col.y, col.z);
+		
+		glBindVertexArray(_CubeVAO);
+		glDrawElements(GL_TRIANGLES, _cubeIndexCount, GL_UNSIGNED_INT, 0);
 	}
 }
 
