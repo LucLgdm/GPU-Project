@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 12:11:43 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 19:38:42 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 09:46:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-Camera::Camera(): _eye(glm::vec3(0.0f, 0.0f, 15.0f)),
+Camera::Camera(): _eye(glm::vec3(0.0f, 0.0f, 60.0f)),
 					_target(glm::vec3(0.0f, 0.0f, 0.0f)),
 					_up(glm::vec3(0.0f, 1.0f, 0.0f)),
 					_projectionMatrix(glm::perspective(glm::radians(30.0f), 1600.0f/1200.0f, 0.1f, 3000.0f)) {}

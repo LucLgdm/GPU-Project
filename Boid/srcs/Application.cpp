@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 19:22:53 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 11:13:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,9 @@ void Application::init() {
 	_renderer = std::make_unique<Renderer>();
 	_renderer->init(_width, _height, 1000);
 	_camera.init(_window, _width, _height);
+	_imguiLayer.init(_window);
 	glfwSetWindowUserPointer(_window, this);
+	std::cout << "\033[32m	Initialisztion completed !\033[0m" << std::endl;
 }
 
 void Application::initGLFW() {
@@ -78,9 +80,6 @@ void Application::setCallbacks() {
 	});
 }
 
-
-
-
 /************************************************************************
  * Main loop
  * **********************************************************************/
@@ -100,12 +99,14 @@ void Application::run() {
 		glm::mat4 mvp = _camera.getProjection(ratio) * _camera.getView() * model;
 		_simulation->update(deltaTime);
 		_renderer->render(_simulation->getSsbo(), mvp);
+		_imguiLayer.render(*_simulation, *_renderer);
 		GLenum err = glGetError();
 		if (err != GL_NO_ERROR)
 			std::cout << "OpenGL error: " << err << std::endl;
         glfwSwapBuffers(_window);
         glfwPollEvents();	
 	}
+	_imguiLayer.shutdown();
 }
 
 

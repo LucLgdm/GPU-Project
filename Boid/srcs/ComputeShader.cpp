@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 15:26:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 11:18:04 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,4 @@ void ComputeShader::dispatch(uint numBoids, float deltaTime) {
 	glDispatchCompute(ceil(numBoids / 256.0), 1, 1);
 
 	glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-}
-
-void ComputeShader::use() {
-	
 }

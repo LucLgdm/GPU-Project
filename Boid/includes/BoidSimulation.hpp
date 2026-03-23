@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 12:01:35 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 12:23:42 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,12 @@ class BoidSimulation {
 		~BoidSimulation();
 
 		void update(float deltaTime);
+		
 		const std::vector<Boid>& getBoids() const { return _boids; };
 		const GLuint& getSsbo() const { return _ssbo; };
+		ComputeShader& getCS()	{return _computeShader; };
+
+		void updateBoundSize(float size) {_computeShader.updateBoundSize(size); };
 
 	private:
 		int _width;

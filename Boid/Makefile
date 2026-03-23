@@ -6,25 +6,25 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/18 11:48:25 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/23 10:42:29 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Compilers
 CPP      = g++
 NVCC     = nvcc
-FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes
+FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes -I includes/ImGui/
 NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
 LDFLAGS  = -L$(CONDA_PREFIX)/lib \
            -L$(CUDA_PREFIX)/lib \
            -lOpenGL -lGLU -lglfw -lGLEW -lcudart
 
 # Sources
-vpath %.cpp srcs/
+vpath %.cpp srcs/ srcs/ImGui
 vpath %.cu  srcs/
 vpath %.c 	srcs/
 
-SRC      = $(wildcard srcs/*.cpp)
+SRC      = $(wildcard srcs/*.cpp) $(wildcard srcs/ImGui/*.cpp)
 CUSRC    = $(wildcard srcs/*.cu)
 SRCC     = glad.c
 

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:25:40 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 19:34:55 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 11:16:00 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,13 +38,16 @@ class Renderer {
 		void render(GLuint, glm::mat4);
 		void resize(int, int);
 
+		void updateBoxSize(float size) {_boxSize = size; };
+		
 		const GLuint& getShaderProg() const { return _shaderProgram; };
+		const float& getBoxSize() const { return _boxSize; };
 
 	private:
 		int _width;
 		int _height;
 		int _numBoids;
-		float _boxSize = 10.0f;
+		float _boxSize = 50.0f;
 		
 		// OpenGL parameters
 		GLuint	_shaderProgram;

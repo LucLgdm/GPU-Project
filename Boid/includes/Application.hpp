@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/20 18:40:06 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 10:25:47 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 #include "Renderer.hpp"
 #include "Shader.hpp"
 #include "Camera.hpp"
+#include "ImGuiLayer.hpp"
 
 struct GLFWwindow;
 struct GLFWmonitor;
@@ -40,6 +41,7 @@ class Application {
 		std::unique_ptr<BoidSimulation> _simulation;
 		std::unique_ptr<Renderer> _renderer;
 		Camera	_camera;
+		ImGuiLayer	_imguiLayer;
 
 		// Window, fullscreen
 		int _width = 1600;
