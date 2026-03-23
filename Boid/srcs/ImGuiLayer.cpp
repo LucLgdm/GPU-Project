@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 12:34:48 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 12:43:25 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,15 +88,15 @@ void ImGuiLayer::renderBoid(BoidSimulation& bs) {
 	bool sepRadiusChanged = ImGui::DragFloat("Separation radius", &uiSepRadius, 0.1f, 0.1f, 5.0f);
 	bool sepWeightChanged = ImGui::DragFloat("Separation weight", &uiSepWeight, 0.1f, 0.1f, 5.0f);
 	if (sepRadiusChanged) cs.setSepRad(uiSepRadius);
-	if (sepWeightChanged) cs.setSepRad(uiSepWeight);
+	if (sepWeightChanged) cs.setSepWei(uiSepWeight);
 
 	static float uiAlignRadius = cs.getAlignRad();
-	static float uiAlignWeight = cs.getAlignRad();
+	static float uiAlignWeight = cs.getAlignWei();
 	
 	bool alignRadiusChanged = ImGui::DragFloat("Alignment radius", &uiAlignRadius, 0.1f, 0.1f, 5.0f);
 	bool alignWeightChanged = ImGui::DragFloat("Alignment weight", &uiAlignWeight, 0.1f, 0.1f, 5.0f);
 	if (alignRadiusChanged) cs.setAlignRad(uiAlignRadius);
-	if (alignWeightChanged) cs.setAlignRad(uiAlignWeight);
+	if (alignWeightChanged) cs.setAlignWei(uiAlignWeight);
 
 	static float uiCoheRadius = cs.getCoheRad();
 	static float uiCoheWeight = cs.getCoheWei();
@@ -104,5 +104,5 @@ void ImGuiLayer::renderBoid(BoidSimulation& bs) {
 	bool coheRadiusChanged = ImGui::DragFloat("Cohesion radius", &uiCoheRadius, 0.1f, 0.1f, 5.0f);
 	bool coheWeightChanged = ImGui::DragFloat("Cohesion weight", &uiCoheWeight, 0.1f, 0.1f, 5.0f);
 	if (coheRadiusChanged) cs.setCoheRad(uiCoheRadius);
-	if (coheWeightChanged) cs.setCoheRad(uiCoheWeight);
+	if (coheWeightChanged) cs.setCoheWei(uiCoheWeight);
 }

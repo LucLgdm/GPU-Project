@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 12:38:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 12:42:22 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,9 +141,9 @@ void Renderer::initShaders() {
 
 void Renderer::createBuffers() {
 	const int segments = 20;
-	const float radius = 0.75 / 5.0f;
-	const float height = 1.0 / 5.0f;
-	const float baseY = -1.0 / 5.0f;
+	const float radius = 0.75 / 15.0f;
+	const float height = 1.0 / 15.0f;
+	const float baseY = -1.0 / 15.0f;
 
 	const float PI = 3.1415926535f;
 
