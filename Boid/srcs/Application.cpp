@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 11:13:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 12:48:01 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,9 +100,6 @@ void Application::run() {
 		_simulation->update(deltaTime);
 		_renderer->render(_simulation->getSsbo(), mvp);
 		_imguiLayer.render(*_simulation, *_renderer);
-		GLenum err = glGetError();
-		if (err != GL_NO_ERROR)
-			std::cout << "OpenGL error: " << err << std::endl;
         glfwSwapBuffers(_window);
         glfwPollEvents();	
 	}
@@ -138,8 +135,6 @@ void Application::handleKey() {
 		}
 	}
 	escPressed = escNow;
-
-	 
 }
 
 void Application::toggleFullscreen() {

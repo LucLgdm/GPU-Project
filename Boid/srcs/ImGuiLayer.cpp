@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 12:43:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 13:03:27 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,24 @@ void ImGuiLayer::render(BoidSimulation& bs, Renderer& render) {
 	beginFrame();
 	ImGui::Begin("Controls");	
 
+	ImGui::StyleColorsClassic();
+	
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.WindowRounding = 8.0f;
+	style.FrameRounding  = 6.0f;
+	style.GrabRounding   = 10.0f;
+	style.ScrollbarSize = 5.0f;
+	style.ScrollbarRounding = 6.0f;
+	ImVec4* colors = style.Colors;
+	
+
+	// colors[ImGuiCol_FrameBg]        = ImVec4(0.18f,0.18f,0.22f,1.00f);
+	// colors[ImGuiCol_FrameBgHovered] = ImVec4(0.28f,0.28f,0.35f,1.00f);
+	// colors[ImGuiCol_FrameBgActive]  = ImVec4(0.32f,0.32f,0.40f,1.00f);
+
+	colors[ImGuiCol_SliderGrab]        = ImVec4(0.80f,0.50f,0.20f,1.00f);
+	colors[ImGuiCol_SliderGrabActive]  = ImVec4(1.00f,0.60f,0.20f,1.00f);
+
 	renderGlobal(bs, render);
 	renderBoid(bs);
 	
@@ -63,7 +81,6 @@ void ImGuiLayer::renderGlobal(BoidSimulation& bs, Renderer& render) {
 		bs.updateBoundSize(uiBoxSize);
 	}
 }
-
 
 void ImGuiLayer::renderBoid(BoidSimulation& bs) {
 	ComputeShader& cs = bs.getCS();
