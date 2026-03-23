@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:22:32 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 15:56:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,7 +255,7 @@ void Renderer::initBox() {
 }
 
 void Renderer::initSphere() {
-	float radius = 4.0f;
+	float radius = 2.0f;
 	int stacks = 32, sectors = 64;
 	std::vector<float> vertices;
     std::vector<unsigned int> indices;
@@ -315,8 +315,8 @@ void Renderer::initSphere() {
 
 void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& spheres) {
 	glClearColor(0.192f, 0.302f, 0.475f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
-	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	glUseProgram(_shaderProgram);
 	GLint uniform_loc = glGetUniformLocation(_shaderProgram, "uMVP");
 	glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(mvp));

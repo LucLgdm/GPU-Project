@@ -122,16 +122,6 @@ void main()
 	// Apply flocking behaviour
 	myVel += applyBoidRules(index, myPos, myVel);
 
-	// Clamp speed
-	float speed = length(myVel);
-	if (speed > uMaxSpeed)
-		myVel = normalize(myVel) * uMaxSpeed;
-	else if (speed < uMinSpeed)
-		myVel = normalize(myVel) * uMinSpeed;
-
-	// Boundaries
-	myVel = boundary(myPos, myVel);
-
 	for (int i = 0; i < uNumSpheres; i++) {
 		vec3 spherePos = spheres[i].xyz;
 		float sphereRadius = spheres[i].w;
@@ -143,6 +133,16 @@ void main()
 			myVel += normalize(diff) * uObstacleWeight * strength;
 		}
 	}
+
+	// Clamp speed
+	float speed = length(myVel);
+	if (speed > uMaxSpeed)
+		myVel = normalize(myVel) * uMaxSpeed;
+	else if (speed < uMinSpeed)
+		myVel = normalize(myVel) * uMinSpeed;
+
+	// Boundaries
+	myVel = boundary(myPos, myVel);
 
 	// Integrate
 	myPos += myVel * uDeltaTime;

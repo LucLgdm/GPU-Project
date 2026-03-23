@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:13:47 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 15:56:27 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ void Application::initGLFW() {
 	glViewport(0, 0, _width, _height);
 	glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
 	glFrontFace(GL_CCW);
+	glEnable(GL_DEPTH_TEST);
 	
 	setCallbacks();
 }

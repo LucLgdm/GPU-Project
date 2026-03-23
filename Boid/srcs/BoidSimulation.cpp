@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:42 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:47:38 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 15:51:04 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ BoidSimulation::BoidSimulation(size_t numBoids, int width, int height) : _numBoi
 
 	initSsbo();
 	initSphereSsbo();
-	addSphere(glm::vec3(0.0f, 0.0f, 0.0f), 4.0f);
+	addSphere(glm::vec3(0.0f, 0.0f, 0.0f), 2.0f);
 	_computeShader = ComputeShader();
 	_computeShader.init("shaders/boid.comp");
 }

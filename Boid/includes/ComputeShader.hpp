@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:14 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 15:48:51 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 16:08:27 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,8 @@ class ComputeShader {
 		float _turnSpeed = 20.0f;
 
 		// Obstacles
-		float _obstacleWeight = 30.0f;
-		float _avoidanceMargin = 0.5f;
+		float _obstacleWeight = 70.0f;
+		float _avoidanceMargin = 3.0f;
 		
 		GLuint _program;
 };

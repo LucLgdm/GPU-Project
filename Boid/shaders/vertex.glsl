@@ -37,5 +37,6 @@ void main() {
 	vec3 rotatedPos = rotationMatrix * aPos;
 	gl_Position = uMVP * (boid.position + vec4(rotatedPos, 0.0));
 
-	vColor = forward * 0.5 + 0.5;
+	// vColor = forward * 0.5 + 0.5;
+	vColor = vec3(1.0f, 0.6f, 0.2f);
 }
