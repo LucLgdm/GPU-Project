@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:12 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 20:04:10 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:53:03 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ Application::~Application() {
  * **********************************************************************/
 
 void Application::init() {
-	int numBoids = 100;
+	int numBoids = 500;
 	initGLFW();
 	_simulation = std::make_unique<BoidSimulation>(numBoids, _width, _height);
 	_renderer = std::make_unique<Renderer>();
@@ -100,7 +100,8 @@ void Application::run() {
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 mvp = _camera.getProjection(ratio) * _camera.getView() * model;
 		_simulation->update(deltaTime);
-		_renderer->render(_simulation->getSsbo(), mvp, _simulation->getSphere(), _simulation->getCube());
+		_renderer->render(_simulation->getSsbo(), mvp, _simulation->getSphere(), _simulation->getCube(),
+							_simulation->getTore());
 		_imguiLayer.render(*_simulation, *_renderer);
         glfwSwapBuffers(_window);
         glfwPollEvents();	

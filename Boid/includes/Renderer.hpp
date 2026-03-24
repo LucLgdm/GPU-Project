@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:25:40 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 19:15:50 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:39:39 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,9 @@ class Renderer {
 		void initBox();
 		void initSphere();
 		void initCube();
+		void initTorus();
 		
-		void render(GLuint, glm::mat4, const std::vector<Sphere>&, const std::vector<Cube>&);
+		void render(GLuint, glm::mat4, const std::vector<Sphere>&, const std::vector<Cube>&, const std::vector<Tore>&);
 		void resize(int, int);
 
 		void updateBoxSize(float size) {_boxSize = size; };
@@ -69,4 +70,7 @@ class Renderer {
 
 		GLuint _CubeVAO, _CubeVBO, _CubeEBO;
 		int _cubeIndexCount;
+
+		GLuint _ToreVAO, _ToreVBO, _ToreEBO;
+		int _toreIndexCount;
 };

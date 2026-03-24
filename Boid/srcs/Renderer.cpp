@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 20:04:19 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:52:05 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void Renderer::init(int width, int height, int numBoid) {
 	_numBoids = numBoid;
 	initShaders();
 	createBuffers();
-	initBox(); initSphere(); initCube();
+	initBox(); initSphere(); initCube(); initTorus();
 }
 
 static std::string readFile(const char* path) {
@@ -392,17 +392,106 @@ void Renderer::initCube() {
 	glBindVertexArray(0);
 }
 
+void Renderer::initTorus() {
+	float R = 0.7f;     // rayon principal
+	float r = 0.25f;    // rayon du tube
+	int majorSeg = 64;  // autour de l'anneau
+	int minorSeg = 32;  // autour du tube
+
+	std::vector<float> vertices;
+	std::vector<unsigned int> indices;
+
+	const float PI = 3.1415926535f;
+
+	// ===== Sommets =====
+	for (int i = 0; i <= majorSeg; i++) {
+		float theta = 2.0f * PI * i / majorSeg;
+		float cosT = cos(theta);
+		float sinT = sin(theta);
+
+		for (int j = 0; j <= minorSeg; j++) {
+			float phi = 2.0f * PI * j / minorSeg;
+			float cosP = cos(phi);
+			float sinP = sin(phi);
+
+			// Position
+			float x = (R + r * cosP) * cosT;
+			float y = r * sinP;
+			float z = (R + r * cosP) * sinT;
+
+			// Centre du tube
+			float cx = R * cosT;
+			float cy = 0.0f;
+			float cz = R * sinT;
+
+			// Normale
+			float nx = x - cx;
+			float ny = y - cy;
+			float nz = z - cz;
+			float len = sqrt(nx*nx + ny*ny + nz*nz);
+			nx /= len; ny /= len; nz /= len;
+
+			// Stockage
+			vertices.push_back(x);
+			vertices.push_back(y);
+			vertices.push_back(z);
+			vertices.push_back(nx);
+			vertices.push_back(ny);
+			vertices.push_back(nz);
+		}
+	}
+
+	// ===== Indices =====
+	for (int i = 0; i < majorSeg; i++) {
+		for (int j = 0; j < minorSeg; j++) {
+			int a = i * (minorSeg + 1) + j;
+			int b = (i + 1) * (minorSeg + 1) + j;
+
+			indices.push_back(a);
+			indices.push_back(b);
+			indices.push_back(a + 1);
+
+			indices.push_back(a + 1);
+			indices.push_back(b);
+			indices.push_back(b + 1);
+		}
+	}
+
+	_toreIndexCount = indices.size();
+
+	// ===== OpenGL =====
+	glGenVertexArrays(1, &_ToreVAO);
+	glGenBuffers(1, &_ToreVBO);
+	glGenBuffers(1, &_ToreEBO);
+
+	glBindVertexArray(_ToreVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, _ToreVBO);
+	glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ToreEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+	// Position
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	// Normales
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void*)(3*sizeof(float)));
+	glEnableVertexAttribArray(1);
+
+	glBindVertexArray(0);
+}
+
 /************************************************************************
  * Rendering
  * **********************************************************************/
 
 void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& spheres,
-						const std::vector<Cube>& cubes) {
+						const std::vector<Cube>& cubes, const std::vector<Tore>& tores) {
 	glClearColor(0.192f, 0.302f, 0.475f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	
-	
 	// Boid
 	glUseProgram(_shaderProgram);
 	GLint uniform_loc = glGetUniformLocation(_shaderProgram, "uMVP");
@@ -470,6 +559,25 @@ void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& sph
 		
 		glBindVertexArray(_CubeVAO);
 		glDrawElements(GL_TRIANGLES, _cubeIndexCount, GL_UNSIGNED_INT, 0);
+	}
+
+	// Tore
+	for (const auto& tore : tores) {
+		glm::vec3 col = glm::vec3(0.4f, 0.8f, 0.1f);
+		glm::vec3 pos = glm::vec3(tore.position);
+
+		glm::mat4 toreModel = glm::translate(glm::mat4(1.0f), pos);
+		glm::mat4 toreMVP = mvp * toreModel;
+
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uMVP");
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(toreMVP));
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uModel");
+		glUniformMatrix4fv(uniform_loc, 1, GL_FALSE, glm::value_ptr(toreModel));
+		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uColor");
+		glUniform3f(uniform_loc, col.x, col.y, col.z);
+
+		glBindVertexArray(_ToreVAO);
+		glDrawElements(GL_TRIANGLES, _toreIndexCount, GL_UNSIGNED_INT, 0);
 	}
 }
 

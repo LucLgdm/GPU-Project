@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 18:53:37 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:54:54 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,12 @@ struct Cube {
 	glm::vec4 max;
 };
 
+struct Tore {
+	glm::vec4 position;
+	glm::vec2 radii;
+	glm::vec2 padding;
+};
+
 class BoidSimulation {
 	public:
 		BoidSimulation(size_t numBoids, int width, int height);
@@ -52,6 +58,7 @@ class BoidSimulation {
 		ComputeShader& getCS()	{return _computeShader; };
 		const std::vector<Sphere>& getSphere() const {return _sphere; };
 		const std::vector<Cube>& getCube() const {return _cube; };
+		const std::vector<Tore>& getTore() const {return _tore; };
 		
 		void updateBoundSize(float size) {_computeShader.updateBoundSize(size); };
 
@@ -60,6 +67,9 @@ class BoidSimulation {
 
 		void addCube(glm::vec4, glm::vec4);
 		void updateCubeSsbo();
+
+		void addTore(glm::vec4, glm::vec2);
+		void updateToreSsbo();
 		
 	private:
 		int _width;
@@ -77,7 +87,11 @@ class BoidSimulation {
 		std::vector<Cube> _cube;
 		GLuint _ssboCube;
 
+		std::vector<Tore> _tore;
+		GLuint _ssboTore;
+		
 		void initSsbo();
 		void initSphereSsbo();
 		void initCubeSsbo();
+		void initToreSsbo();
 };

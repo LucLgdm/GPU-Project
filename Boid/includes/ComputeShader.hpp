@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/20 11:00:14 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 20:06:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:58:13 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class ComputeShader {
 		~ComputeShader();
 
 		void init(const char*);
-		void dispatch(uint, float, GLuint, int, int);
+		void dispatch(uint, float, GLuint, int, int, int);
 
 		void updateBoundSize(float size) {_boundSize = size; };
 

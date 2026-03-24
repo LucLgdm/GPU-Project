@@ -12,6 +12,16 @@ struct Cube {
     vec4 max;
 };
 
+struct Torus {
+    vec4 position;
+    vec2 radii;
+    vec2 padding;
+};
+
+layout(std430, binding = 3) readonly buffer TorusBuffer {
+    Torus tores[];
+};
+
 layout(std430, binding = 2) readonly buffer CubeBuffer {
     Cube cubes[];
 };
@@ -42,6 +52,7 @@ uniform float uCohesionWeight;
 
 uniform uint uNumSpheres;
 uniform uint uNumCubes;
+uniform uint uNumTores;
 
 uniform float uObstacleWeight;
 uniform float uAvoidanceMargin;
@@ -120,6 +131,11 @@ vec3 boundary(vec3 myPos, vec3 myVel) {
 	return myVel;
 }
 
+float sdTorus(vec3 p, vec2 t) {
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
 // =============================
 // Main
 // =============================
@@ -134,6 +150,7 @@ void main()
 	// Apply flocking behaviour
 	myVel += applyBoidRules(index, myPos, myVel);
 
+	// Avoid Sphere
 	for (int i = 0; i < uNumSpheres; i++) {
 		vec3 spherePos = spheres[i].xyz;
 		float sphereRadius = spheres[i].w;
@@ -146,6 +163,7 @@ void main()
 		}
 	}
 
+	// Avoid Cube
 	for (int i = 0; i < uNumCubes; i++) {
 		vec3 closest = clamp(myPos, cubes[i].min.xyz, cubes[i].max.xyz);
 		vec3 diff = myPos - closest;
@@ -160,6 +178,23 @@ void main()
 			// Boid coincé dedans, pousse vers le centre de la boîte
 			vec3 center = (cubes[i].min.xyz + cubes[i].max.xyz) * 0.5;
 			myVel += normalize(myPos - center) * uObstacleWeight;
+		}
+	}
+
+	// Avoid Torus
+	for (int i = 0; i < uNumTores; i++) {
+		vec3 localPos = myPos - tores[i].position.xyz;
+		float dist = sdTorus(localPos, tores[i].radii);
+		if (dist < uAvoidanceMargin) {
+			// gradient de la SDF = direction de répulsion
+			float eps = 0.001;
+			vec3 grad = normalize(vec3(
+				sdTorus(localPos + vec3(eps,0,0), tores[i].radii) - dist,
+				sdTorus(localPos + vec3(0,eps,0), tores[i].radii) - dist,
+				sdTorus(localPos + vec3(0,0,eps), tores[i].radii) - dist
+			));
+			float strength = (uAvoidanceMargin - dist) / uAvoidanceMargin;
+			myVel += grad * uObstacleWeight * strength;
 		}
 	}
 

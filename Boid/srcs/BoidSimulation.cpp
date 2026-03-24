@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:42 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 19:18:05 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:58:33 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,10 @@ BoidSimulation::BoidSimulation(size_t numBoids, int width, int height) : _numBoi
 	initSsbo();
 	initSphereSsbo();
 	initCubeSsbo();
+	initToreSsbo();
 	addSphere(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f);
 	addCube(glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+	addTore(glm::vec4(5.0f, 3.0f, 5.0f, 1.0f), glm::vec2(3.0f, 1.0f));
 	_computeShader = ComputeShader();
 	_computeShader.init("shaders/boid.comp");
 }
@@ -68,12 +70,20 @@ void BoidSimulation::initCubeSsbo() {
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _ssboCube);
 }
 
+void BoidSimulation::initToreSsbo() {
+	glGenBuffers(1, &_ssboTore);
+
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboTore);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, _tore.size() * sizeof(Tore), _tore.data(), GL_DYNAMIC_DRAW);
+	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, _ssboTore);
+}
+
 /************************************************************************
  * Update simulation
  * **********************************************************************/
 
 void BoidSimulation::update(float deltaTime) {
-	_computeShader.dispatch(_numBoids, deltaTime, _ssboSphere, _sphere.size(), _cube.size());
+	_computeShader.dispatch(_numBoids, deltaTime, _ssboSphere, _sphere.size(), _cube.size(), _tore.size());
 }
 
 void BoidSimulation::addSphere(glm::vec3 position, float radius) {
@@ -95,5 +105,16 @@ void BoidSimulation::addCube(glm::vec4 min, glm::vec4 max) {
 void BoidSimulation::updateCubeSsbo() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboCube);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, _cube.size() * sizeof(Cube), _cube.data(), GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void BoidSimulation::addTore(glm::vec4 position, glm::vec2 radii) {
+	_tore.push_back({position, radii});
+	updateToreSsbo();
+}
+
+void BoidSimulation::updateToreSsbo() {
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboTore);
+	glBufferData(GL_SHADER_STORAGE_BUFFER, _tore.size() * sizeof(Tore), _tore.data(), GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
