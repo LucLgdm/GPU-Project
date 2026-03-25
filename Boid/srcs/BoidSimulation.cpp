@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:42 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/24 14:58:33 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:00:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ BoidSimulation::BoidSimulation(size_t numBoids, int width, int height) : _numBoi
 									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
 									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
 									1.0f),
-						  glm::vec4((static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
-						 			(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
-									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 2.0f,
+						  glm::vec4((static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 0.7f,
+						 			(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 0.7f,
+									(static_cast<float>(rand()) / static_cast<float>(RAND_MAX) * 2.0f - 1.0f) * 0.7f,
 									1.0f)
 		});
 	}
@@ -39,9 +39,6 @@ BoidSimulation::BoidSimulation(size_t numBoids, int width, int height) : _numBoi
 	initSphereSsbo();
 	initCubeSsbo();
 	initToreSsbo();
-	addSphere(glm::vec3(1.0f, 1.0f, 1.0f), 0.5f);
-	addCube(glm::vec4(-1.0f, -1.0f, -1.0f, 1.0f), glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-	addTore(glm::vec4(5.0f, 3.0f, 5.0f, 1.0f), glm::vec2(3.0f, 1.0f));
 	_computeShader = ComputeShader();
 	_computeShader.init("shaders/boid.comp");
 }
@@ -97,6 +94,14 @@ void BoidSimulation::updateSphereSsbo() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
+void BoidSimulation::updateSpherePos(glm::vec4 positionRadius, int i) {
+	_sphere[i].positionRadius = positionRadius;
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboSphere);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, i * sizeof(Sphere), sizeof(Sphere), &_sphere[i]);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+
 void BoidSimulation::addCube(glm::vec4 min, glm::vec4 max) {
 	_cube.push_back({min, max});
 	updateCubeSsbo();
@@ -108,7 +113,16 @@ void BoidSimulation::updateCubeSsbo() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-void BoidSimulation::addTore(glm::vec4 position, glm::vec2 radii) {
+void BoidSimulation::updateCubePos(glm::vec4 min, glm::vec4 max, int i) {
+	_cube[i].max = max;
+	_cube[i].min = min;
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboCube);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, i * sizeof(Cube), sizeof(Cube), &_cube[i]);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);	
+}
+
+
+void BoidSimulation::addTore(glm::vec4 position, glm::vec4 radii) {
 	_tore.push_back({position, radii});
 	updateToreSsbo();
 }
@@ -117,4 +131,12 @@ void BoidSimulation::updateToreSsbo() {
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboTore);
 	glBufferData(GL_SHADER_STORAGE_BUFFER, _tore.size() * sizeof(Tore), _tore.data(), GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void BoidSimulation::updateTorePos(glm::vec4 pos, glm::vec4 rad, int i) {
+	_tore[i].position = pos;
+	_tore[i].radii = rad;	
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, _ssboTore);
+	glBufferSubData(GL_SHADER_STORAGE_BUFFER, i * sizeof(Tore), sizeof(Tore), &_tore[i]);
+	glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);	
 }

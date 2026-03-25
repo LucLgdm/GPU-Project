@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:35:33 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/24 14:52:05 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:56:55 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -566,7 +566,13 @@ void Renderer::render(GLuint ssbo, glm::mat4 mvp, const std::vector<Sphere>& sph
 		glm::vec3 col = glm::vec3(0.4f, 0.8f, 0.1f);
 		glm::vec3 pos = glm::vec3(tore.position);
 
+		glm::vec3 scaleVec(
+			tore.radii.x / 0.7f,   // scale de R
+			tore.radii.y / 0.25f,  // scale de r
+			tore.radii.x / 0.7f    // X et Z suivent R
+		);
 		glm::mat4 toreModel = glm::translate(glm::mat4(1.0f), pos);
+		toreModel = glm::scale(toreModel, scaleVec);
 		glm::mat4 toreMVP = mvp * toreModel;
 
 		uniform_loc = glGetUniformLocation(_boxShaderProgram, "uMVP");

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/24 14:54:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:05:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,8 +42,7 @@ struct Cube {
 
 struct Tore {
 	glm::vec4 position;
-	glm::vec2 radii;
-	glm::vec2 padding;
+	glm::vec4 radii;
 };
 
 class BoidSimulation {
@@ -64,12 +63,15 @@ class BoidSimulation {
 
 		void addSphere(glm::vec3, float);
 		void updateSphereSsbo();
+		void updateSpherePos(glm::vec4, int);
 
 		void addCube(glm::vec4, glm::vec4);
 		void updateCubeSsbo();
+		void updateCubePos(glm::vec4, glm::vec4, int);
 
-		void addTore(glm::vec4, glm::vec2);
+		void addTore(glm::vec4, glm::vec4);
 		void updateToreSsbo();
+		void updateTorePos(glm::vec4, glm::vec4, int);
 		
 	private:
 		int _width;

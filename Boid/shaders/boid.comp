@@ -14,8 +14,7 @@ struct Cube {
 
 struct Torus {
     vec4 position;
-    vec2 radii;
-    vec2 padding;
+    vec4 radii;
 };
 
 layout(std430, binding = 3) readonly buffer TorusBuffer {
@@ -131,7 +130,7 @@ vec3 boundary(vec3 myPos, vec3 myVel) {
 	return myVel;
 }
 
-float sdTorus(vec3 p, vec2 t) {
+float sdTorus(vec3 p, vec4 t) {
     vec2 q = vec2(length(p.xz) - t.x, p.y);
     return length(q) - t.y;
 }
