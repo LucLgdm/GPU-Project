@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 11:58:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 10:25:47 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/23 15:14:13 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@
 #include "Exception.hpp"
 #include "BoidSimulation.hpp"
 #include "Renderer.hpp"
-#include "Shader.hpp"
 #include "Camera.hpp"
 #include "ImGuiLayer.hpp"
 

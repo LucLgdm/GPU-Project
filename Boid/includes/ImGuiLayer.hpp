@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/23 10:10:56 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 11:43:40 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:03:52 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,5 @@ class ImGuiLayer {
 
 		void renderGlobal(BoidSimulation&, Renderer& );
 		void renderBoid(BoidSimulation&);
-
-	private:
-		
+		void renderObject(BoidSimulation&, Renderer&);		
 };

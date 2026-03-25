@@ -7,6 +7,28 @@ struct Boid {
 	vec4 velocity;
 };
 
+struct Cube {
+    vec4 min;
+    vec4 max;
+};
+
+struct Torus {
+    vec4 position;
+    vec4 radii;
+};
+
+layout(std430, binding = 3) readonly buffer TorusBuffer {
+    Torus tores[];
+};
+
+layout(std430, binding = 2) readonly buffer CubeBuffer {
+    Cube cubes[];
+};
+
+layout(std430, binding = 1) readonly buffer SphereBuffer {
+    vec4 spheres[]; // xyz = position, w = rayon
+};
+
 layout(std430, binding = 0) buffer BoidBuffer {
 	Boid boids[];
 };
@@ -26,6 +48,13 @@ uniform float uAlignementWeight;
 
 uniform float uCohesionRadius;
 uniform float uCohesionWeight;
+
+uniform uint uNumSpheres;
+uniform uint uNumCubes;
+uniform uint uNumTores;
+
+uniform float uObstacleWeight;
+uniform float uAvoidanceMargin;
 
 
 // =============================
@@ -101,6 +130,11 @@ vec3 boundary(vec3 myPos, vec3 myVel) {
 	return myVel;
 }
 
+float sdTorus(vec3 p, vec4 t) {
+    vec2 q = vec2(length(p.xz) - t.x, p.y);
+    return length(q) - t.y;
+}
+
 // =============================
 // Main
 // =============================
@@ -114,6 +148,54 @@ void main()
 
 	// Apply flocking behaviour
 	myVel += applyBoidRules(index, myPos, myVel);
+
+	// Avoid Sphere
+	for (int i = 0; i < uNumSpheres; i++) {
+		vec3 spherePos = spheres[i].xyz;
+		float sphereRadius = spheres[i].w;
+		
+		float dist = distance(myPos, spherePos);
+		if (dist < sphereRadius + uAvoidanceMargin) {
+			vec3 diff = myPos - spherePos;
+			float strength = (sphereRadius + uAvoidanceMargin - dist) / uAvoidanceMargin;
+			myVel += normalize(diff) * uObstacleWeight * strength;
+		}
+	}
+
+	// Avoid Cube
+	for (int i = 0; i < uNumCubes; i++) {
+		vec3 closest = clamp(myPos, cubes[i].min.xyz, cubes[i].max.xyz);
+		vec3 diff = myPos - closest;
+		float dist = length(diff);
+
+		if (dist < uAvoidanceMargin) {
+			float strength = (uAvoidanceMargin - dist) / uAvoidanceMargin;
+			myVel += normalize(diff) * uObstacleWeight * strength;
+		}
+
+		if (dist < 0.0001) {
+			// Boid coincé dedans, pousse vers le centre de la boîte
+			vec3 center = (cubes[i].min.xyz + cubes[i].max.xyz) * 0.5;
+			myVel += normalize(myPos - center) * uObstacleWeight;
+		}
+	}
+
+	// Avoid Torus
+	for (int i = 0; i < uNumTores; i++) {
+		vec3 localPos = myPos - tores[i].position.xyz;
+		float dist = sdTorus(localPos, tores[i].radii);
+		if (dist < uAvoidanceMargin) {
+			// gradient de la SDF = direction de répulsion
+			float eps = 0.001;
+			vec3 grad = normalize(vec3(
+				sdTorus(localPos + vec3(eps,0,0), tores[i].radii) - dist,
+				sdTorus(localPos + vec3(0,eps,0), tores[i].radii) - dist,
+				sdTorus(localPos + vec3(0,0,eps), tores[i].radii) - dist
+			));
+			float strength = (uAvoidanceMargin - dist) / uAvoidanceMargin;
+			myVel += grad * uObstacleWeight * strength;
+		}
+	}
 
 	// Clamp speed
 	float speed = length(myVel);

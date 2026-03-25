@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/18 15:23:01 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/23 12:23:42 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:05:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,20 @@ struct Boid {
 	glm::vec4 velocity;
 };
 
+struct Sphere {
+	glm::vec4 positionRadius;
+};
+
+// A cube is an AABB (Axis-Aligned Bounding-Box)
+struct Cube {
+	glm::vec4 min;
+	glm::vec4 max;
+};
+
+struct Tore {
+	glm::vec4 position;
+	glm::vec4 radii;
+};
 
 class BoidSimulation {
 	public:
@@ -41,9 +55,24 @@ class BoidSimulation {
 		const std::vector<Boid>& getBoids() const { return _boids; };
 		const GLuint& getSsbo() const { return _ssbo; };
 		ComputeShader& getCS()	{return _computeShader; };
-
+		const std::vector<Sphere>& getSphere() const {return _sphere; };
+		const std::vector<Cube>& getCube() const {return _cube; };
+		const std::vector<Tore>& getTore() const {return _tore; };
+		
 		void updateBoundSize(float size) {_computeShader.updateBoundSize(size); };
 
+		void addSphere(glm::vec3, float);
+		void updateSphereSsbo();
+		void updateSpherePos(glm::vec4, int);
+
+		void addCube(glm::vec4, glm::vec4);
+		void updateCubeSsbo();
+		void updateCubePos(glm::vec4, glm::vec4, int);
+
+		void addTore(glm::vec4, glm::vec4);
+		void updateToreSsbo();
+		void updateTorePos(glm::vec4, glm::vec4, int);
+		
 	private:
 		int _width;
 		int _height;
@@ -53,5 +82,18 @@ class BoidSimulation {
 
 		GLuint _ssbo; // Shader Storage Buffer Object
 		ComputeShader _computeShader;
+
+		std::vector<Sphere> _sphere;
+		GLuint _ssboSphere;
+
+		std::vector<Cube> _cube;
+		GLuint _ssboCube;
+
+		std::vector<Tore> _tore;
+		GLuint _ssboTore;
+		
 		void initSsbo();
+		void initSphereSsbo();
+		void initCubeSsbo();
+		void initToreSsbo();
 };
