@@ -6,21 +6,29 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/09 17:26:11 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/25 19:07:42 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
+CUDA_PREFIX := $(CONDA_PREFIX)/targets/x86_64-linux
 # Compilers
 CPP      = g++
 NVCC     = nvcc
-FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include -Iincludes
-NVFLAGS  = -g -std=c++17 -I includes/ --extended-lambda
+FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include \
+			-Iincludes -I includes/ImGui/
+			
+NVFLAGS  = -g -std=c++17 -I$(CUDA_PREFIX)/include -I includes/ --extended-lambda
 LDFLAGS  = -L$(CONDA_PREFIX)/lib \
            -L$(CUDA_PREFIX)/lib \
            -lOpenGL -lGLU -lglfw -lGLEW -lcudart
+NVFLAGS += -diag-suppress 550
+
+FLAGS   += -I$(CONDA_PREFIX)/include
+NVFLAGS += -I$(CONDA_PREFIX)/include
+LDFLAGS += -L$(CONDA_PREFIX)/lib
 
 # Sources
-vpath %.cpp srcs/
+vpath %.cpp srcs/ srcs/ImGui
 vpath %.cu  srcs/
 vpath %.c 	srcs/
 
