@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/18 11:09:53 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/09 17:06:14 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/27 14:53:41 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,14 @@ class openGlError : public exception {
 class cuda_Error : public exception {
 	public:
 		explicit cuda_Error(const std::string& m) : _msg(m) {}
+		const char* what() const noexcept override { return _msg.c_str(); }
+	private :
+		string _msg;
+};
+
+class tinyObjLoader_Error : public exception {
+	public:
+		explicit tinyObjLoader_Error(const std::string& m) : _msg(m) {}
 		const char* what() const noexcept override { return _msg.c_str(); }
 	private :
 		string _msg;

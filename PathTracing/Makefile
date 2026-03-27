@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/03/25 19:07:42 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/03/27 14:24:50 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,10 +14,10 @@ CUDA_PREFIX := $(CONDA_PREFIX)/targets/x86_64-linux
 # Compilers
 CPP      = g++
 NVCC     = nvcc
-FLAGS    = -MMD -g -std=c++17 -I$(CUDA_PREFIX)/include \
+FLAGS    = -MMD -MP -g -std=c++17 -I$(CUDA_PREFIX)/include \
 			-Iincludes -I includes/ImGui/
 			
-NVFLAGS  = -g -std=c++17 -I$(CUDA_PREFIX)/include -I includes/ --extended-lambda
+NVFLAGS  = -MMD -MP -g -std=c++17 -I$(CUDA_PREFIX)/include -I includes/ --extended-lambda
 LDFLAGS  = -L$(CONDA_PREFIX)/lib \
            -L$(CUDA_PREFIX)/lib \
            -lOpenGL -lGLU -lglfw -lGLEW -lcudart
@@ -28,20 +28,25 @@ NVFLAGS += -I$(CONDA_PREFIX)/include
 LDFLAGS += -L$(CONDA_PREFIX)/lib
 
 # Sources
-vpath %.cpp srcs/ srcs/ImGui
-vpath %.cu  srcs/
-vpath %.c 	srcs/
+SRC = $(wildcard srcs/*.cpp) \
+      $(wildcard srcs/app/*.cpp) \
+      $(wildcard srcs/cuda/*.cpp) \
+      $(wildcard srcs/ImGui/*.cpp) \
+      $(wildcard srcs/render/*.cpp) \
+      $(wildcard srcs/scene/*.cpp)
 
-SRC      = $(wildcard srcs/*.cpp)
-CUSRC    = $(wildcard srcs/*.cu)
-SRCC     = glad.c
+CUSRC = $(wildcard srcs/cuda/*.cu)
+
+SRCC = srcs/glad.c
 
 # Object directories
 OBJDIR   = objs
-OBJ      = $(SRC:%.cpp=$(OBJDIR)/%.o)
-CUOBJ    = $(CUSRC:srcs/%.cu=$(OBJDIR)/%.o)
-OBJGLAD  = $(OBJDIR)/glad.o
-DEP      = $(OBJ:.o=.d)
+CUOBJDIR = objs_cuda
+OBJ   = $(SRC:srcs/%.cpp=$(OBJDIR)/%.o)
+CUOBJ = $(CUSRC:srcs/%.cu=$(CUOBJDIR)/%.o)
+OBJGLAD	= $(OBJDIR)/glad.o
+DEP		= $(OBJ:.o=.d)
+DEP += $(CUOBJ:.o=.d)
 
 # Target executable
 NAME     = PathTracer
@@ -49,12 +54,11 @@ NAME     = PathTracer
 all: $(NAME) ## Compile and link in the container
 
 clean: ## Clean object files in the container
-	@rm -rf $(OBJDIR)/* $(OBJDIR)/**/*
+	@rm -rf $(OBJDIR) $(CUOBJDIR)
 	@echo "\033[34mDeleted object files!\033[0m"
 
 fclean: clean ## Clean object files and executable and docker volumes
 	@rm -f $(NAME)
-	@rm -rf objs
 	@echo "\033[35mDeleted everything!\033[0m"
 	
 re: fclean all ## Rebuild
@@ -78,17 +82,17 @@ $(NAME): $(OBJ) $(CUOBJ) $(OBJGLAD)
 	@echo "\033[32m$(NAME) created!\033[0m"
 
 # Compile C++ sources
-$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: srcs/%.cpp
 	@mkdir -p $(@D)
 	@$(CPP) $(FLAGS) -c $< -o $@
 
 # Compile CUDA sources
-$(OBJDIR)/%.o: %.cu
+$(CUOBJDIR)/%.o: srcs/%.cu
 	@mkdir -p $(@D)
 	@$(NVCC) $(NVFLAGS) -c $< -o $@
 	
 # Compile GLAD (C source)
-$(OBJDIR)/glad.o: $(SRCC)
+$(OBJDIR)/glad.o: srcs/glad.c
 	@mkdir -p $(@D)
 	@$(CPP) $(FLAGS) -c $< -o $@
 	

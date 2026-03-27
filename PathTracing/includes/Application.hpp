@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/26 11:25:33 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/27 14:32:19 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include "Renderer.hpp"
 #include "Camera.hpp"
 #include "Compute.hpp"
+#include "Scene.hpp"
 
 
 struct GLFWwindow;
@@ -39,6 +40,8 @@ class Application {
 		GLFWwindow *_window;
 		std::unique_ptr<Renderer> _renderer;
 		std::unique_ptr<Compute> _computer;
+		std::unique_ptr<Scene> _scene;
+
 		Camera	_camera;
 		// ImGuiLayer	_imguiLayer;
 
