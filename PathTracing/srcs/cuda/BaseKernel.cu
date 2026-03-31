@@ -39,14 +39,14 @@ __global__ void clearKernel(uchar4* buffer, int width, int height, float time) {
 	buffer[i] = color;
 }
 
-void Compute::update(uchar4* devPtr, float time) {
+void Compute::update(uchar4* devPtr, const SceneData& scene) {
 	// 🔹 Lancement kernel
 	dim3 block(16,16);
 	dim3 grid((_width + block.x - 1)/block.x,
 	          (_height + block.y - 1)/block.y);
 
 	// uchar4 color = make_uchar4(70, 130, 180, 255); // bleu doux
-	clearKernel<<<grid, block>>>(devPtr, _width, _height, time);
+	clearKernel<<<grid, block>>>(devPtr, _width, _height, 0.5f);
 
 	// Unneccessary here because cudaGraphicsUnmapResources() already do it
 	// cudaDeviceSynchronize();

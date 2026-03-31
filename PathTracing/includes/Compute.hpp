@@ -6,11 +6,13 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 11:17:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/26 17:46:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/31 12:32:18 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
+
+#include "Scene.hpp"
 
 struct uchar4;
 
@@ -19,7 +21,8 @@ class Compute {
 		Compute(int, int);
 		~Compute();
 		
-		void update(uchar4*, float);
+		void update(uchar4*, const SceneData&);
+		void updateCamera(uchar4*);
 
 	private:
 		int _height;

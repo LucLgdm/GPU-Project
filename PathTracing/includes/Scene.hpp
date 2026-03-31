@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/27 15:56:32 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/31 13:57:26 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 #include <cmath>
 #include <cassert>
 
-#include "Scene.hpp"
 #include "Exception.hpp"
 #include "Mesh.hpp"
 

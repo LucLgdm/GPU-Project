@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/27 15:47:59 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/03/31 12:32:34 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void Application::init() {
 	_computer = std::make_unique<Compute>(_height, _width);
 	_scene = std::make_unique<Scene>();
 	_scene->load("./assets/models/Fighter.obj");
-	// _camera.init(_window, _width, _height);
+	_camera.init(_window, _width, _height);
 	// _imguiLayer.init(_window);
 	glfwSetWindowUserPointer(_window, this);
 	std::cout << "\033[32m	Initialisation completed !\033[0m" << std::endl;
@@ -93,9 +93,11 @@ void Application::run() {
 		float deltaTime = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
 		handleKey();
+		_camera.update(_window);
 		
 		uchar4 *devPtr = _renderer->mapPBO();
-		_computer->update(devPtr, currentTime);
+		_computer->updateCamera(devPtr);
+		_computer->update(devPtr, _scene->getGpuData());
 		_renderer->unmapPBO();
 		
 		_renderer->render();
