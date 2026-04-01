@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/31 12:32:34 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/01 15:29:31 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,13 @@ Application::~Application() {
  * Initialization
  * **********************************************************************/
 
-void Application::init() {
+void Application::init(char *pathScene) {
 	initGLFW();
 	_renderer = std::make_unique<Renderer>();
 	_renderer->init(_width, _height);
 	_computer = std::make_unique<Compute>(_height, _width);
 	_scene = std::make_unique<Scene>();
-	_scene->load("./assets/models/Fighter.obj");
+	_scene->load(pathScene);
 	_camera.init(_window, _width, _height);
 	// _imguiLayer.init(_window);
 	glfwSetWindowUserPointer(_window, this);
@@ -93,16 +93,16 @@ void Application::run() {
 		float deltaTime = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
 		handleKey();
-		_camera.update(_window);
+		_camera.updatePos(_window);
+		_camera.updatePlan();
 		
 		uchar4 *devPtr = _renderer->mapPBO();
-		_computer->updateCamera(devPtr);
 		_computer->update(devPtr, _scene->getGpuData());
 		_renderer->unmapPBO();
 		
 		_renderer->render();
-        glfwSwapBuffers(_window);
-        glfwPollEvents();	
+		glfwSwapBuffers(_window);
+		glfwPollEvents();	
 	}
 }
 

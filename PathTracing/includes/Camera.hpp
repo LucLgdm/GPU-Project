@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/31 12:03:35 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/01 15:32:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <map>
+#include "CameraData.hpp"
 
 struct GLFWwindow;
 
@@ -47,9 +48,13 @@ class Camera {
 		glm::mat4 getProjection(float);
 		const glm::vec3& getEyes() const { return _eye; };
 		const glm::vec3& getTarget() const { return _target; };
+		const glm::vec3& getUp() const { return _up; };
+		const float& getFov() const {return _fov; };
+		const float& getAspect() const {return _aspect; };
 
 		void updateProjectionMatrix(int, int);
-		void update(GLFWwindow *);
+		void updatePos(GLFWwindow *);
+		void updatePlan();
 		
 		void resetMouse(float, float);
 		void beginRotate();
@@ -62,6 +67,8 @@ class Camera {
 		glm::vec3 _up;		// Verticale
 		glm::mat4 _projectionMatrix;
 
+		float _fov;
+		float _aspect;
 		// Mouse
 		int _lastX, _lastY;
 		bool _rotating = false, _firstMouse = false;

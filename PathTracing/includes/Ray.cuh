@@ -13,6 +13,7 @@
 #pragma once
 
 #include "Scene.hpp"
+#include "MathUtils.cuh"
 
 struct Ray {
     float3 origin;

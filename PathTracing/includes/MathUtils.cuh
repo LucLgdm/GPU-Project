@@ -14,9 +14,15 @@
 
 #include <cuda_runtime.h>
 
+// Basic operator
 __host__ __device__ inline float3 operator+(float3 a, float3 b) {
 	return make_float3(a.x + b.x, a.y + b.y, a.z + b.z);
 }
+
+__host__ __device__ inline float3 operator+(float3 a, float f) {
+	return make_float3(a.x + f, a.y + f, a.z + f);
+}
+
 
 __host__ __device__ inline float3 operator-(float3 a, float3 b) {
 	return make_float3(a.x - b.x, a.y - b.y, a.z - b.z);
@@ -51,4 +57,23 @@ __host__ __device__ inline float3 vecProd(float3 a, float3 b) {
 __host__ __device__ inline float3 normalize(float3 a) {
 	float len = sqrtf(a.x * a.x + a.y * a.y + a.z * a.z);
 	return a / len;
+}
+
+
+// Conversion
+__host__ __device__ inline uchar4 toRGBA8(float3 color) {
+	color.x = fminf(fmaxf(color.x, 0.0f), 1.0f);
+	color.y = fminf(fmaxf(color.y, 0.0f), 1.0f);
+	color.z = fminf(fmaxf(color.z, 0.0f), 1.0f);
+
+	// color.x = sqrtf(color.x);
+	// color.y = sqrtf(color.y);
+	// color.z = sqrtf(color.z);
+
+	return make_uchar4(
+		(unsigned char)(color.x * 255.0f),
+		(unsigned char)(color.y * 255.0f),
+		(unsigned char)(color.z * 255.0f),
+		255
+	);
 }

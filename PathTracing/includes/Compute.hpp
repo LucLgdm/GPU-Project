@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 11:17:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/31 12:32:18 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/01 15:30:45 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ class Compute {
 		~Compute();
 		
 		void update(uchar4*, const SceneData&);
-		void updateCamera(uchar4*);
 
 	private:
 		int _height;

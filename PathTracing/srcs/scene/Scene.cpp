@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/27 15:58:02 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/01 11:30:57 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,10 +171,10 @@ void Scene::load(const std::string& pathFile) {
 			indexOffset += 3;
 		}
 	}
-	std::cout << "[Scene] Loaded: " << _triangles.size() << " triangles, "
-			<< _materials.size() << " materials\n";
+	std::cout << "\033[32m[Scene]\033[0m \033[33mLoaded: " << _triangles.size() << " triangles, "
+			<< _materials.size() << " materials\033[0m\n";
 
-	// uploadToGPU();
+	uploadToGPU();
 	_loaded = true;
 }
 
@@ -182,22 +182,22 @@ void Scene::load(const std::string& pathFile) {
  * Upload to GPU
  * **********************************************************************/
 
-// void Scene::uploadToGPU() {
-// 	size_t triBytes = _triangles.size() * sizeof(Triangle);
-// 	size_t matBytes = _materials.size() * sizeof(Material);
+void Scene::uploadToGPU() {
+	size_t triBytes = _triangles.size() * sizeof(Triangle);
+	size_t matBytes = _materials.size() * sizeof(Material);
 
-// 	CUDA_CHECK(cudaMalloc(&_d_triangles, triBytes));
-// 	CUDA_CHECK(cudaMemcpy(_d_triangles, _triangles.data(), triBytes, cudaMemcpyHostToDevice));
+	CUDA_CHECK(cudaMalloc(&_d_triangles, triBytes));
+	CUDA_CHECK(cudaMemcpy(_d_triangles, _triangles.data(), triBytes, cudaMemcpyHostToDevice));
 
-// 	CUDA_CHECK(cudaMalloc(&_d_materials, matBytes));
-// 	CUDA_CHECK(cudaMemcpy(_d_materials, _materials.data(), matBytes, cudaMemcpyHostToDevice));
+	CUDA_CHECK(cudaMalloc(&_d_materials, matBytes));
+	CUDA_CHECK(cudaMemcpy(_d_materials, _materials.data(), matBytes, cudaMemcpyHostToDevice));
 
-// 	_gpuData.triangles		= _d_triangles;
-// 	_gpuData.triangleCount	= static_cast<int>(_triangles.size());
-// 	_gpuData.materials		= _d_materials;
-// 	_gpuData.materialCount	= static_cast<int>(_materials.size());
+	_gpuData.triangles		= _d_triangles;
+	_gpuData.triangleCount	= static_cast<int>(_triangles.size());
+	_gpuData.materials		= _d_materials;
+	_gpuData.materialCount	= static_cast<int>(_materials.size());
 
-// 	std::cout << "[Scene] GPU upload done ("
-// 			<< triBytes / 1024 << " KB triangles, "
-// 			<< matBytes        << " B materials)\n";
-// }
+	std::cout << "\033[32m[Scene]\033[0m \033[33mGPU upload done ("
+			<< triBytes / 1024 << " KB triangles, "
+			<< matBytes        << " B materials)\033[0m\n";
+}

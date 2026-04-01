@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:02 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/31 12:15:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/01 12:48:23 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ class Application {
 		Application();
 		~Application();
 
-		void init();
+		void init(char *);
 		void run();
 		
 		void handleKey();

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/25 18:15:00 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/01 15:43:38 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,10 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-Camera::Camera(): _eye(glm::vec3(0.0f, 0.0f, 60.0f)),
-					_target(glm::vec3(0.0f, 0.0f, 0.0f)),
-					_up(glm::vec3(0.0f, 1.0f, 0.0f)),
-					_projectionMatrix(glm::perspective(glm::radians(30.0f), 1600.0f/1200.0f, 0.1f, 3000.0f)) {}
+void uploadCamera(const CameraData&);
+
+Camera::Camera(): _eye(glm::vec3(0.0f, 0.0f, 10.0f)), _target(glm::vec3(0.0f, 0.0f, 0.0f)),
+					_up(glm::vec3(0.0f, 1.0f, 0.0f)), _fov(60.0f) { }
 
 Camera::~Camera() { }
 
@@ -27,6 +27,10 @@ void Camera::init(GLFWwindow *window, int width, int height) {
 	_lastX = width / 2.0f;
 	_lastY = height / 2.0f;
 	glfwSetCursorPos(window, _lastX, _lastY);
+	
+	_aspect = (float)width / height;
+	_projectionMatrix = glm::perspective(glm::radians(_fov / 2.0f), _aspect, 0.1f, 3000.0f);
+
 }
 
 glm::mat4 Camera::getView() {
@@ -79,7 +83,7 @@ void Camera::processMouseMove(float xpos, float ypos) {
 }
 
 
-void Camera::update(GLFWwindow *window) {
+void Camera::updatePos(GLFWwindow *window) {
 	// Recalculate forward
 	glm::vec3 forward;
 	forward.x = cos(glm::radians(_yaw)) * cos(glm::radians(_pitch));
@@ -107,4 +111,34 @@ void Camera::update(GLFWwindow *window) {
 void Camera::resetMouse(float x, float y) {
 	_lastX = x;
 	_lastY = y;
+}
+
+
+void Camera::updatePlan() {
+	glm::vec3 w = normalize(_eye - _target);
+	glm::vec3 u = normalize(cross(_up, w));
+	glm::vec3 v = cross(w, u);
+
+	float halfH = tan(glm::radians(_fov * 0.5f));
+	float halfW = _aspect * halfH;
+
+	CameraData cam;
+
+	cam.origin[0] = _eye.x;
+	cam.origin[1] = _eye.y;
+	cam.origin[2] = _eye.z;
+
+	cam.lowerLeftCorner[0] = cam.origin[0] - halfW * u.x - halfH * v.x - w.x;
+	cam.lowerLeftCorner[1] = cam.origin[1] - halfW * u.y - halfH * v.y - w.y;
+	cam.lowerLeftCorner[2] = cam.origin[2] - halfW * u.z - halfH * v.z - w.z;
+	
+	cam.horizontal[0] = 2 * halfW * u.x;
+	cam.horizontal[1] = 2 * halfW * u.y;
+	cam.horizontal[2] = 2 * halfW * u.z;
+	
+	cam.vertical[0] = 2 * halfH * v.x;
+	cam.vertical[1] = 2 * halfH * v.y;
+	cam.vertical[2] = 2 * halfH * v.z;
+
+	uploadCamera(cam);
 }

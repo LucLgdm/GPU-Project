@@ -1,25 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Camera.cuh                                         :+:      :+:    :+:   */
+/*   CameraData.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/04/01 11:04:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/01 14:48:03 by lde-merc         ###   ########.fr       */
+/*   Created: 2026/04/01 14:47:37 by lde-merc          #+#    #+#             */
+/*   Updated: 2026/04/01 15:32:45 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
-#include "Ray.cuh"
-
-// The image is a rectangle defined by 3 vectors : lowerLeftCorner, horizontal, vertical
-
 struct CameraData {
-	float3 origin;
-	float3 lowerLeftCorner;
-	float3 horizontal;
-	float3 vertical;
+	float origin[3];
+	float lowerLeftCorner[3];
+	float horizontal[3];
+	float vertical[3];
 };
-

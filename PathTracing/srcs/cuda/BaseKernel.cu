@@ -10,9 +10,18 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "Ray.cuh"
 #include "Compute.hpp"
+#include "CameraData.hpp"
 
-// __global__ void clearKernel(uchar4* buffer, int width, int height, uchar4 color);
+struct GPUCameraData {
+	float3 origin;
+	float3 lowerLeftCorner;
+	float3 horizontal;
+	float3 vertical;
+};
+
+__constant__ GPUCameraData d_camera;
 
 __global__ void clearKernel(uchar4* buffer, int width, int height, float time) {
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -39,15 +48,54 @@ __global__ void clearKernel(uchar4* buffer, int width, int height, float time) {
 	buffer[i] = color;
 }
 
+__device__ Ray generateRay(GPUCameraData cam, float u, float v) {
+	Ray ray;
+
+	ray.origin = cam.origin;
+	ray.dir = cam.lowerLeftCorner + cam.horizontal * u + cam.vertical * v - ray.origin;
+	ray.dir = normalize(ray.dir);
+
+	return ray;
+}
+
+__global__ void pathTraceKernel(uchar4* fb, int width, int height,
+								const Triangle* triangles, int triCount) {
+
+	// x and y are the pixel coordinate
+	int x = blockIdx.x * blockDim.x + threadIdx.x;
+	int y = blockIdx.y * blockDim.y + threadIdx.y;
+
+	if (x >= width || y >= height) return;
+
+	int idx = x + y * width;
+	float u = (float)x / width;
+	float v = (float)y / height;
+
+	Ray ray = generateRay(d_camera, u, v);
+	HitRecord hit = intersectScene(ray, triangles, triCount);
+
+	if (hit.hit)
+		fb[idx] = toRGBA8(hit.normal * 0.5f + 0.5f);
+	else
+		fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
+}
+
+// 🔹 Lancement kernel
 void Compute::update(uchar4* devPtr, const SceneData& scene) {
-	// 🔹 Lancement kernel
 	dim3 block(16,16);
 	dim3 grid((_width + block.x - 1)/block.x,
 	          (_height + block.y - 1)/block.y);
 
-	// uchar4 color = make_uchar4(70, 130, 180, 255); // bleu doux
-	clearKernel<<<grid, block>>>(devPtr, _width, _height, 0.5f);
+	pathTraceKernel<<<grid, block>>>(devPtr, _width, _height, scene.triangles, scene.triangleCount);
+}
 
-	// Unneccessary here because cudaGraphicsUnmapResources() already do it
-	// cudaDeviceSynchronize();
+void uploadCamera(const CameraData& cam) {
+	GPUCameraData gpuCam;
+
+	gpuCam.origin = make_float3(cam.origin[0], cam.origin[1], cam.origin[2]);
+	gpuCam.lowerLeftCorner = make_float3(cam.lowerLeftCorner[0], cam.lowerLeftCorner[1], cam.lowerLeftCorner[2]);
+	gpuCam.horizontal = make_float3(cam.horizontal[0], cam.horizontal[1], cam.horizontal[2]);
+	gpuCam.vertical = make_float3(cam.vertical[0], cam.vertical[1], cam.vertical[2]);
+
+    cudaMemcpyToSymbol(d_camera, &gpuCam, sizeof(CameraData));
 }
