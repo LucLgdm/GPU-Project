@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/01 11:30:57 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/07 16:47:05 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,6 +174,9 @@ void Scene::load(const std::string& pathFile) {
 	std::cout << "\033[32m[Scene]\033[0m \033[33mLoaded: " << _triangles.size() << " triangles, "
 			<< _materials.size() << " materials\033[0m\n";
 
+	// Build BVH
+	_bvh.build(_triangles);
+
 	uploadToGPU();
 	_loaded = true;
 }
@@ -183,6 +186,7 @@ void Scene::load(const std::string& pathFile) {
  * **********************************************************************/
 
 void Scene::uploadToGPU() {
+	// --- TRIANGLES & MATERIALS ---
 	size_t triBytes = _triangles.size() * sizeof(Triangle);
 	size_t matBytes = _materials.size() * sizeof(Material);
 
@@ -200,4 +204,39 @@ void Scene::uploadToGPU() {
 	std::cout << "\033[32m[Scene]\033[0m \033[33mGPU upload done ("
 			<< triBytes / 1024 << " KB triangles, "
 			<< matBytes        << " B materials)\033[0m\n";
+	
+	size_t nodeBytes = _bvh.getNodes().size() * sizeof(BVHNode);
+	size_t indexBytes = _bvh.getIndices().size() * sizeof(int);
+
+	// --- BVH ---
+	if (_bvh.getNodes().empty()) {
+		_gpuData.bvhNodes = nullptr;
+		_gpuData.bvhNodeCount = 0;
+		_gpuData.bvhTriangleIndices = nullptr;
+		return;
+	}
+	
+	CUDA_CHECK(cudaMalloc(&_d_nodes, nodeBytes));
+	CUDA_CHECK(cudaMemcpy(_d_nodes,
+		_bvh.getNodes().data(),
+		nodeBytes,
+		cudaMemcpyHostToDevice));
+
+	// --- triangle indices ---
+	CUDA_CHECK(cudaMalloc(&_d_triangleIndices, indexBytes));
+	CUDA_CHECK(cudaMemcpy(_d_triangleIndices,
+		_bvh.getIndices().data(),
+		indexBytes,
+		cudaMemcpyHostToDevice));
+	
+	_gpuData.bvhNodes = _d_nodes;
+	_gpuData.bvhNodeCount = static_cast<int>(_bvh.getNodes().size());
+	_gpuData.bvhTriangleIndices = _d_triangleIndices;
+	_gpuData.bvhRootIndex = _bvh.getRootIndex();
+	
+	std::cout << "\033[32m[Scene]\033[0m \033[33mBVH upload done ("
+			<< nodeBytes / 1024 << " KB nodes, "
+			<< indexBytes / 1024 << " KB indices, root: " << _gpuData.bvhRootIndex << ")\033[0m\n";
 }
+
+	

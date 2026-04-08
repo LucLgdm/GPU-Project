@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/01 15:29:31 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/07 17:33:09 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void Application::init(char *pathScene) {
 	_camera.init(_window, _width, _height);
 	// _imguiLayer.init(_window);
 	glfwSetWindowUserPointer(_window, this);
-	std::cout << "\033[32m	Initialisation completed !\033[0m" << std::endl;
+	std::cout << "\033[32m[Application]\033[0m \033[33m	Initialisation completed !\033[0m" << std::endl;
 }
 
 void Application::initGLFW() {
@@ -44,7 +44,7 @@ void Application::initGLFW() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	_window = glfwCreateWindow(_width, _height, "Moteur de base GPU", nullptr, nullptr);
+	_window = glfwCreateWindow(_width, _height, "PathTracer GPU", nullptr, nullptr);
 	if (!_window)
 		throw glfwError("Window creation failed");
 
@@ -87,7 +87,7 @@ void Application::setCallbacks() {
  * **********************************************************************/
 
 void Application::run() {
-	std::cout << "\033[33m	Let's play!\033[0m" << std::endl;
+	std::cout << "\033[32m[Application]\033[0m\033[33m	Running!\033[0m" << std::endl;
 	float currentTime = glfwGetTime();
 	while (!glfwWindowShouldClose(_window)) {
 		float deltaTime = glfwGetTime() - currentTime;

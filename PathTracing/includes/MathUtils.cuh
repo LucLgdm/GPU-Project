@@ -40,8 +40,16 @@ __host__ __device__ inline float3 operator*(float d, float3 a) {
 	return make_float3(a.x * d, a.y * d, a.z * d);
 }
 
+__host__ __device__ inline float3 operator*(float3 a, float3 b) {
+	return make_float3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
 __host__ __device__ inline float3 operator/(float3 a, float d) {
 	return make_float3(a.x / d, a.y / d, a.z / d);
+}
+
+__host__ __device__ inline float3 operator/(float3 a, float3 b) {
+	return make_float3(a.x / b.x, a.y / b.y, a.z / b.z);
 }
 
 __host__ __device__ inline float dotProd(float3 a, float3 b) {
@@ -59,6 +67,23 @@ __host__ __device__ inline float3 normalize(float3 a) {
 	return a / len;
 }
 
+
+// Bqasic functions
+__host__ __device__ inline float3 fminf(const float3 &a, const float3 &b) {
+    return make_float3(
+        fminf(a.x, b.x),
+        fminf(a.y, b.y),
+        fminf(a.z, b.z)
+    );
+}
+
+__host__ __device__ inline float3 fmaxf(const float3 &a, const float3 &b) {
+    return make_float3(
+        fmaxf(a.x, b.x),
+        fmaxf(a.y, b.y),
+        fmaxf(a.z, b.z)
+    );
+}
 
 // Conversion
 __host__ __device__ inline uchar4 toRGBA8(float3 color) {
