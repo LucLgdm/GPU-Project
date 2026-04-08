@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/07 16:47:05 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:22:57 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,10 @@ Scene::~Scene() {
 void Scene::freeGPU() {
     if (_d_triangles) { cudaFree(_d_triangles); _d_triangles = nullptr; }
     if (_d_materials) { cudaFree(_d_materials); _d_materials = nullptr; }
+	if (_d_nodes) { cudaFree(_d_nodes); _d_nodes = nullptr; }
+	if (_d_triangleIndices) { cudaFree(_d_triangleIndices); _d_triangleIndices = nullptr; }
+	if (_d_bvh) { cudaFree(_d_bvh); _d_bvh = nullptr; }
+	if (_d_dirLights) { cudaFree(_d_dirLights); _d_dirLights = nullptr; }
 }
 
 /************************************************************************
@@ -176,6 +180,8 @@ void Scene::load(const std::string& pathFile) {
 
 	// Build BVH
 	_bvh.build(_triangles);
+	_dirLights.push_back({ make_float3(10.0f, 10.0f, 10.0f), make_float3(5.0f, 5.0f, 5.0f), 15.0f });
+	// _dirLights.push_back({ make_float3(10.0f, 10.0f, -10.0f), make_float3(255.0f, 5.0f, 5.0f), 15.0f });
 
 	uploadToGPU();
 	_loaded = true;
@@ -217,17 +223,9 @@ void Scene::uploadToGPU() {
 	}
 	
 	CUDA_CHECK(cudaMalloc(&_d_nodes, nodeBytes));
-	CUDA_CHECK(cudaMemcpy(_d_nodes,
-		_bvh.getNodes().data(),
-		nodeBytes,
-		cudaMemcpyHostToDevice));
-
-	// --- triangle indices ---
+	CUDA_CHECK(cudaMemcpy(_d_nodes, _bvh.getNodes().data(), nodeBytes, cudaMemcpyHostToDevice));
 	CUDA_CHECK(cudaMalloc(&_d_triangleIndices, indexBytes));
-	CUDA_CHECK(cudaMemcpy(_d_triangleIndices,
-		_bvh.getIndices().data(),
-		indexBytes,
-		cudaMemcpyHostToDevice));
+	CUDA_CHECK(cudaMemcpy(_d_triangleIndices, _bvh.getIndices().data(), indexBytes, cudaMemcpyHostToDevice));
 	
 	_gpuData.bvhNodes = _d_nodes;
 	_gpuData.bvhNodeCount = static_cast<int>(_bvh.getNodes().size());
@@ -237,6 +235,17 @@ void Scene::uploadToGPU() {
 	std::cout << "\033[32m[Scene]\033[0m \033[33mBVH upload done ("
 			<< nodeBytes / 1024 << " KB nodes, "
 			<< indexBytes / 1024 << " KB indices, root: " << _gpuData.bvhRootIndex << ")\033[0m\n";
+
+	// --- DIRECTIONAL LIGHTS ---
+	size_t dirLightBytes = _dirLights.size() * sizeof(DirLight);
+	CUDA_CHECK(cudaMalloc(&_d_dirLights, dirLightBytes));
+	CUDA_CHECK(cudaMemcpy(_d_dirLights, _dirLights.data(), dirLightBytes, cudaMemcpyHostToDevice));
+
+	_gpuData.dirLights = _d_dirLights;
+	_gpuData.dirLightCount = static_cast<int>(_dirLights.size());
+	
+	std::cout << "\033[32m[Scene]\033[0m \033[33mDirectional lights upload done ("
+			<< dirLightBytes / 1024 << " KB)\033[0m\n";
 }
 
 	

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/07 15:14:22 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/08 13:45:22 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:03:32 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ void BVH::build(const std::vector<Triangle>& triangles) {
 	// Build the BVH recursively and store root index
 	_rootIndex = buildNode(0, triangles.size());
 
-	std::cout << "BVH built with " << _nodes.size() << " nodes, "
-			<< triangles.size() << " triangles, root index: " << _rootIndex << std::endl;
+	std::cout << "\033[32m[BVH]\033[0m \033[33mBuilt with " << _nodes.size() << " nodes, "
+			<< triangles.size() << " triangles, root index: " << _rootIndex << "\033[0m\n";
 }
 AABB BVH::computeAABB(int begin, int end) {
 	AABB box;
@@ -56,9 +56,7 @@ int BVH::buildNode(int begin, int end) {
 	// Create a new node
 	int nodeIndex = _nodes.size();
 	_nodes.emplace_back();
-	// BVHNode& node = _nodes.back();
 
-	// node.box = computeAABB(begin, end);
 	_nodes[nodeIndex].box = computeAABB(begin, end);	
 	int count = end - begin;
 

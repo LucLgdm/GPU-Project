@@ -148,7 +148,8 @@ __device__ bool intersectBVH(const Ray& ray, const BVHNode* nodes, const int* in
 
 __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 								const Triangle* triangles, int triCount,
-								const BVHNode* nodes, const int* bvhIndices, int rootIndex) {
+								const BVHNode* nodes, const int* bvhIndices, int rootIndex,
+								const DirLight* dirLights, int dirLightCount) {
 	
 	// x and y are the pixel coordinate
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -175,22 +176,40 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 	hit.normal = make_float3(0.0f, 0.0f, 0.0f);
 
 	bool didHit = intersectBVH(ray, nodes, bvhIndices, triangles, rootIndex, hit);
-	if (didHit)
-		fb[idx] = toRGBA8(hit.normal * 0.5f + 0.5f);
+	if (didHit) {
+		float3 color = make_float3(0.0f, 0.0f, 0.0f);
+
+		for (int i = 0; i < dirLightCount; i++) {
+			const DirLight& light = dirLights[i];
+
+			float3 L = light.direction - hit.posImpact;
+			float dist2 = dotProd(L, L);
+			L = normalize(L);
+
+			float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
+
+			float attenuation = light.intensity / dist2;
+
+			color = color + light.color * NdotL * attenuation;
+		}
+
+		fb[idx] = toRGBA8(color);
+	}
+		// fb[idx] = toRGBA8(hit.normal * 0.5f + 0.5f);
 	else
 		fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
-
 }
 
 
 // Lancement kernel
 void Compute::update(uchar4* devPtr, const SceneData& scene) {
 	dim3 block(16,16);
-	dim3 grid((_width + block.x - 1)/block.x,
-	          (_height + block.y - 1)/block.y);
+	dim3 grid((_width + block.x - 1) / block.x,
+	          (_height + block.y - 1) / block.y);
 	pathTraceKernel<<<grid, block>>>(devPtr, _width, _height,
 									scene.triangles, scene.triangleCount,
-									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex);
+									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex,
+									scene.dirLights, scene.dirLightCount);
 }
 
 void uploadCamera(const CameraData& cam) {

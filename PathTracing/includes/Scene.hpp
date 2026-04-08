@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/07 17:29:16 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/08 16:03:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 
 #include "Exception.hpp"
 #include "BVH.hpp"
+#include "Light.hpp"
 
 // A struct to pass to the kernel
 struct SceneData {
@@ -34,6 +35,9 @@ struct SceneData {
 	int			bvhNodeCount;
 	int*		bvhTriangleIndices;
 	int			bvhRootIndex;
+
+	DirLight*	dirLights;
+	int			dirLightCount;
 };
 
 // This class load a .obj on the CPU and send it to the GPU
@@ -57,6 +61,7 @@ class Scene {
 		// CPU side
 		std::vector<Triangle> _triangles;
 		std::vector<Material> _materials;
+		std::vector<DirLight> _dirLights;
 		BVH _bvh;
 	
 		// GPU side
@@ -66,6 +71,8 @@ class Scene {
 		BVH*		_d_bvh = nullptr;
 		BVHNode*	_d_nodes = nullptr;
 		int*		_d_triangleIndices = nullptr;
+		
+		DirLight*	_d_dirLights = nullptr;
 		
 		SceneData	_gpuData = {};
 		bool		_loaded  = false;
