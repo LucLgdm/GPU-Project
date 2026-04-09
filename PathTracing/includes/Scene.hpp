@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/08 16:03:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/09 10:32:10 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 #include "Exception.hpp"
 #include "BVH.hpp"
 #include "Light.hpp"
+#include "MathUtils.cuh"
 
 // A struct to pass to the kernel
 struct SceneData {

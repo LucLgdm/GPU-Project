@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/08 16:22:57 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/09 10:42:30 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -180,7 +180,8 @@ void Scene::load(const std::string& pathFile) {
 
 	// Build BVH
 	_bvh.build(_triangles);
-	_dirLights.push_back({ make_float3(10.0f, 10.0f, 10.0f), make_float3(5.0f, 5.0f, 5.0f), 15.0f });
+	_dirLights.push_back({ make_float3(0.5f, -0.001f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 50.0f });
+	_dirLights.back().direction = normalize(-_dirLights.back().direction);
 	// _dirLights.push_back({ make_float3(10.0f, 10.0f, -10.0f), make_float3(255.0f, 5.0f, 5.0f), 15.0f });
 
 	uploadToGPU();

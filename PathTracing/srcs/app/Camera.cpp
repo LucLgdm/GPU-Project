@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/01 15:43:38 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/09 10:04:41 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,8 @@ void Camera::updatePos(GLFWwindow *window) {
 	if (_keys[GLFW_KEY_D].isDown) _eye += right   * _moveSpeed;
 	if (_keys[GLFW_KEY_Q].isDown) _eye +=  up * _moveSpeed;
 	if (_keys[GLFW_KEY_E].isDown) _eye -=  up * _moveSpeed;
+	if (_keys[GLFW_KEY_LEFT_SHIFT].isDown) _moveSpeed = 0.1f;
+	else _moveSpeed = 0.03f;
 
 	_target = _eye + forward;
 }

@@ -149,7 +149,8 @@ __device__ bool intersectBVH(const Ray& ray, const BVHNode* nodes, const int* in
 __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 								const Triangle* triangles, int triCount,
 								const BVHNode* nodes, const int* bvhIndices, int rootIndex,
-								const DirLight* dirLights, int dirLightCount) {
+								const DirLight* dirLights, int dirLightCount,
+								const Material* materials) {
 	
 	// x and y are the pixel coordinate
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -182,15 +183,19 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 		for (int i = 0; i < dirLightCount; i++) {
 			const DirLight& light = dirLights[i];
 
+			Ray shadowRay = { hit.posImpact + hit.normal * 0.001f, -light.direction }; // Offset to avoid self-intersection
+			HitRecord shadowHit; shadowHit.hit = false;
+			intersectBVH(shadowRay, nodes, bvhIndices, triangles, rootIndex, shadowHit);
+			if (shadowHit.hit)
+				continue; // In shadow, skip this light
+
 			float3 L = light.direction - hit.posImpact;
 			float dist2 = dotProd(L, L);
-			L = normalize(L);
+			L = normalize(-light.direction); // Light direction is from light to point
 
 			float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
 
-			float attenuation = light.intensity / dist2;
-
-			color = color + light.color * NdotL * attenuation;
+			color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
 		}
 
 		fb[idx] = toRGBA8(color);
@@ -209,7 +214,8 @@ void Compute::update(uchar4* devPtr, const SceneData& scene) {
 	pathTraceKernel<<<grid, block>>>(devPtr, _width, _height,
 									scene.triangles, scene.triangleCount,
 									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex,
-									scene.dirLights, scene.dirLightCount);
+									scene.dirLights, scene.dirLightCount,
+									scene.materials);
 }
 
 void uploadCamera(const CameraData& cam) {
