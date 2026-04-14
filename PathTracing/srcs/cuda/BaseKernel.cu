@@ -48,6 +48,15 @@ __global__ void clearKernel(uchar4* buffer, int width, int height, float time) {
 	buffer[i] = color;
 }
 
+__device__ float randFloat(unsigned int& state) {
+	// Xorshift 3 operations bitwise
+	state ^= state << 13;
+	state ^= state >> 17;
+	state ^= state << 5;
+	// return a float in [0, 1)
+	return (float)state / (float)UINT_MAX;
+}
+
 __device__ Ray generateRay(GPUCameraData cam, float u, float v) {
 	Ray ray;
 
@@ -146,7 +155,7 @@ __device__ bool intersectBVH(const Ray& ray, const BVHNode* nodes, const int* in
 	return hitSomething;
 }
 
-__global__ void pathTraceKernel(uchar4* fb, int width, int height,
+__global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameIndex, float3* accumBuffer,
 								const Triangle* triangles, int triCount,
 								const BVHNode* nodes, const int* bvhIndices, int rootIndex,
 								const DirLight* dirLights, int dirLightCount,
@@ -158,9 +167,11 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 
 	if (x >= width || y >= height) return;
 
+	unsigned int seed = x + y * width + frameIndex * width * height; // Unique seed per pixel and frame
+
 	int idx = x + y * width;
-	float u = (float)x / width;
-	float v = (float)y / height;
+	float u = ((float)x + randFloat(seed)) / width;
+	float v = ((float)y + randFloat(seed)) / height;
 
 	Ray ray = generateRay(d_camera, u, v);
 	// Non BVH intersection
@@ -189,19 +200,17 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 			if (shadowHit.hit)
 				continue; // In shadow, skip this light
 
-			float3 L = light.direction - hit.posImpact;
-			float dist2 = dotProd(L, L);
-			L = normalize(-light.direction); // Light direction is from light to point
+			// float3 L = light.direction - hit.posImpact;
+			// float dist2 = dotProd(L, L);
+			float3 L = normalize(-light.direction); // Light direction is from light to point
 
 			float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
 
 			color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
 		}
-
-		fb[idx] = toRGBA8(color);
-	}
-		// fb[idx] = toRGBA8(hit.normal * 0.5f + 0.5f);
-	else
+		accumBuffer[idx] = accumBuffer[idx] + color;
+		fb[idx] = toRGBA8(accumBuffer[idx] / (float)(frameIndex + 1)); // Average color over frames
+	}else
 		fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
 }
 
@@ -210,12 +219,17 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height,
 void Compute::update(uchar4* devPtr, const SceneData& scene) {
 	dim3 block(16,16);
 	dim3 grid((_width + block.x - 1) / block.x,
-	          (_height + block.y - 1) / block.y);
-	pathTraceKernel<<<grid, block>>>(devPtr, _width, _height,
+			(_height + block.y - 1) / block.y);
+	pathTraceKernel<<<grid, block>>>(devPtr, _width, _height, _frameIndex++, _accumBuffer,
 									scene.triangles, scene.triangleCount,
 									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex,
 									scene.dirLights, scene.dirLightCount,
 									scene.materials);
+}
+
+void Compute::resetAccumulation() {
+	_frameIndex = 0;
+	cudaMemset(_accumBuffer, 0, _height * _width * sizeof(float3));
 }
 
 void uploadCamera(const CameraData& cam) {

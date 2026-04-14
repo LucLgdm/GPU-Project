@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/09 10:04:41 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/09 17:55:51 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,8 +95,10 @@ void Camera::updatePos(GLFWwindow *window) {
 	glm::vec3 up = normalize(cross(right, forward));
 
 	// WASD
-	for (auto &keyPair : _keys)
+	for (auto &keyPair : _keys) {
 		keyPair.second.update(glfwGetKey(window, keyPair.first) == GLFW_PRESS);
+		if (keyPair.second.isDown) _updated = true;
+	}
 
 	if (_keys[GLFW_KEY_W].isDown) _eye += forward * _moveSpeed;
 	if (_keys[GLFW_KEY_S].isDown) _eye -= forward * _moveSpeed;

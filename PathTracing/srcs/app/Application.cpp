@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/07 17:33:09 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/14 13:39:01 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,11 @@ void Application::run() {
 		handleKey();
 		_camera.updatePos(_window);
 		_camera.updatePlan();
+		
+		if (_camera.isUpdated()) {
+			_computer->resetAccumulation();
+			_camera.setUpdated(false);
+		}
 		
 		uchar4 *devPtr = _renderer->mapPBO();
 		_computer->update(devPtr, _scene->getGpuData());
