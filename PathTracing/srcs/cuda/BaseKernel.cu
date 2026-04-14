@@ -208,10 +208,12 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 
 			color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
 		}
+		color = color + materials[hit.matIndex].emission; // Add emissive component
 		accumBuffer[idx] = accumBuffer[idx] + color;
 		fb[idx] = toRGBA8(accumBuffer[idx] / (float)(frameIndex + 1)); // Average color over frames
-	}else
+	} else {
 		fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
+	}
 }
 
 
