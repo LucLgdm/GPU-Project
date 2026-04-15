@@ -207,33 +207,85 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 			color = color + materials[hit.matIndex].emission; // Add emissive component
 			finalColor = finalColor + throughput * color;
 
-			throughput = throughput * materials[hit.matIndex].albedo; // Update throughput for next bounce
+			// Update throughput
+			throughput = throughput * materials[hit.matIndex].albedo;
 
-			// Russian roulette termination
-			if (j > 0) {
-				float r1 = randFloat(seed), r2 = randFloat(seed);
+			// Russian roulette
+			if (j > 3) {
+				float p = fmaxf(throughput.x, fmaxf(throughput.y, throughput.z));
+				p = fminf(p, 0.95f);
 
-				float phi = 2.0f * M_PI * r1;
-				float cosTheta = sqrtf(1.0f - r2);
-				float sinTheta = sqrtf(r2);
+				if (randFloat(seed) > p)
+					break;
 
-				float3 localDir = make_float3(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
-
-				float3 N = normalize(hit.normal);
-				// Choose a non parallel vector to N
-				float3 helper = fabs(N.y) < 0.999f
-					? make_float3(0.0f, 1.0f, 0.0f) : make_float3(1.0f, 0.0f, 0.0f);
-
-				float3 T = normalize(vecProd(helper, N));
-				float3 B = vecProd(N, T);
-				ray.origin = hit.posImpact + hit.normal * 0.001f; // Offset to avoid self-intersection
-				// Random diffuse bounce
-				// Local spherical coordinates to world space
-				// float3 localDir = make_float3(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
-
-				ray.dir = localDir.x * T + localDir.y * B + localDir.z * hit.normal;
-				ray.dir = normalize(ray.dir);
+				throughput = throughput / p;
 			}
+
+			// New direction (cosine weighted)
+			float r1 = randFloat(seed);
+			float r2 = randFloat(seed);
+
+			float phi = 2.0f * M_PI * r1;
+			float cosTheta = sqrtf(1.0f - r2);
+			float sinTheta = sqrtf(r2);
+
+			float3 localDir = make_float3(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+
+			// Build ONB
+			float3 N = normalize(hit.normal);
+			float3 helper = fabs(N.y) < 0.999f ? make_float3(0,1,0) : make_float3(1,0,0);
+			float3 T = normalize(vecProd(helper, N));
+			float3 B = vecProd(N, T);
+
+			// Transform
+			float3 newDir = localDir.x * T + localDir.y * B + localDir.z * N;
+
+			// Update ray
+			ray.origin = hit.posImpact + N * 0.001f;
+			ray.dir = normalize(newDir);
+
+
+
+			// throughput = throughput * materials[hit.matIndex].albedo; // Update throughput for next bounce
+
+			// // Russian roulette termination
+			// if (j > 0) {
+			// 	float r1 = randFloat(seed), r2 = randFloat(seed);
+
+			// 	float phi = 2.0f * M_PI * r1;
+			// 	float cosTheta = sqrtf(1.0f - r2);
+			// 	float sinTheta = sqrtf(r2);
+
+			// 	float3 localDir = make_float3(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+
+			// 	float3 N = normalize(hit.normal);
+			// 	// Choose a non parallel vector to N
+			// 	float3 helper = fabs(N.y) < 0.999f
+			// 		? make_float3(0.0f, 1.0f, 0.0f) : make_float3(1.0f, 0.0f, 0.0f);
+
+			// 	float3 T = normalize(vecProd(helper, N));
+			// 	float3 B = vecProd(N, T);
+			// 	ray.origin = hit.posImpact + hit.normal * 0.001f; // Offset to avoid self-intersection
+			// 	// Random diffuse bounce
+			// 	// Local spherical coordinates to world space
+			// 	// float3 localDir = make_float3(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
+
+			// 	ray.dir = localDir.x * T + localDir.y * B + localDir.z * hit.normal;
+			// 	ray.dir = normalize(ray.dir);
+			// }
+			// // Russian roulette termination after 3 bounces to avoid infinite loops and reduce noise
+			// // If there is a lot of light, we want to keep the path alive longer,
+			// // so we use the throughput as a probability factor
+			// if (j > 3) {
+			// 	float p = fmaxf(throughput.x, fmaxf(throughput.y, throughput.z));
+
+			// 	p = fminf(p, 0.95f); // éviter p = 1
+
+			// 	if (randFloat(seed) > p)
+			// 		break;
+
+			// 	throughput = throughput / p;
+			// }
 		} else {
 			// fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
 			break; // No hit, terminate path
