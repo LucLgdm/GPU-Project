@@ -174,13 +174,6 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 	float v = ((float)y + randFloat(seed)) / height;
 
 	Ray ray = generateRay(d_camera, u, v);
-	// Non BVH intersection
-	// HitRecord hit = intersectScene(ray, triangles, triCount);
-	// if (hit.hit)
-	// 	fb[idx] = toRGBA8(hit.normal * 0.5f + 0.5f);
-	// else
-	// 	fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
-
 	// BVH intersection
 	HitRecord hit;
 	hit.hit = false;
@@ -200,8 +193,6 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 			if (shadowHit.hit)
 				continue; // In shadow, skip this light
 
-			// float3 L = light.direction - hit.posImpact;
-			// float dist2 = dotProd(L, L);
 			float3 L = normalize(-light.direction); // Light direction is from light to point
 
 			float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);

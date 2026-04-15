@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/09 17:55:51 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/04/15 10:12:40 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,6 +80,7 @@ void Camera::processMouseMove(float xpos, float ypos) {
 	_pitch += dy * _sensitivity;
 
 	_pitch = glm::clamp(_pitch, -89.0f, 89.0f);
+	_updated = true;
 }
 
 
