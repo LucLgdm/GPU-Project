@@ -173,38 +173,74 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 	float u = ((float)x + randFloat(seed)) / width;
 	float v = ((float)y + randFloat(seed)) / height;
 
+	float3 finalColor = make_float3(0.0f, 0.0f, 0.0f);
+	float3 throughput = make_float3(1.0f, 1.0f, 1.0f);
+	static int maxDepth = 5;
+
 	Ray ray = generateRay(d_camera, u, v);
-	// BVH intersection
-	HitRecord hit;
-	hit.hit = false;
-	hit.t = 1e30f;
-	hit.normal = make_float3(0.0f, 0.0f, 0.0f);
+	for (int j = 0; j < maxDepth; j++) {
+		// BVH intersection
+		HitRecord hit;
+		hit.hit = false;
+		hit.t = 1e30f;
+		hit.normal = make_float3(0.0f, 0.0f, 0.0f);
 
-	bool didHit = intersectBVH(ray, nodes, bvhIndices, triangles, rootIndex, hit);
-	if (didHit) {
-		float3 color = make_float3(0.0f, 0.0f, 0.0f);
+		bool didHit = intersectBVH(ray, nodes, bvhIndices, triangles, rootIndex, hit);
+		if (didHit) {
+			float3 color = make_float3(0.0f, 0.0f, 0.0f);
 
-		for (int i = 0; i < dirLightCount; i++) {
-			const DirLight& light = dirLights[i];
+			for (int i = 0; i < dirLightCount; i++) {
+				const DirLight& light = dirLights[i];
 
-			Ray shadowRay = { hit.posImpact + hit.normal * 0.001f, -light.direction }; // Offset to avoid self-intersection
-			HitRecord shadowHit; shadowHit.hit = false;
-			intersectBVH(shadowRay, nodes, bvhIndices, triangles, rootIndex, shadowHit);
-			if (shadowHit.hit)
-				continue; // In shadow, skip this light
+				Ray shadowRay = { hit.posImpact + hit.normal * 0.001f, -light.direction }; // Offset to avoid self-intersection
+				HitRecord shadowHit; shadowHit.hit = false;
+				intersectBVH(shadowRay, nodes, bvhIndices, triangles, rootIndex, shadowHit);
+				if (shadowHit.hit)
+					continue; // In shadow, skip this light
 
-			float3 L = normalize(-light.direction); // Light direction is from light to point
+				float3 L = normalize(-light.direction); // Light direction is from light to point
 
-			float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
+				float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
 
-			color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
+				color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
+			}
+			color = color + materials[hit.matIndex].emission; // Add emissive component
+			finalColor = finalColor + throughput * color;
+
+			throughput = throughput * materials[hit.matIndex].albedo; // Update throughput for next bounce
+
+			// Russian roulette termination
+			if (j > 0) {
+				float r1 = randFloat(seed), r2 = randFloat(seed);
+
+				float phi = 2.0f * M_PI * r1;
+				float cosTheta = sqrtf(1.0f - r2);
+				float sinTheta = sqrtf(r2);
+
+				float3 localDir = make_float3(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
+
+				float3 N = normalize(hit.normal);
+				// Choose a non parallel vector to N
+				float3 helper = fabs(N.y) < 0.999f
+					? make_float3(0.0f, 1.0f, 0.0f) : make_float3(1.0f, 0.0f, 0.0f);
+
+				float3 T = normalize(vecProd(helper, N));
+				float3 B = vecProd(N, T);
+				ray.origin = hit.posImpact + hit.normal * 0.001f; // Offset to avoid self-intersection
+				// Random diffuse bounce
+				// Local spherical coordinates to world space
+				// float3 localDir = make_float3(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
+
+				ray.dir = localDir.x * T + localDir.y * B + localDir.z * hit.normal;
+				ray.dir = normalize(ray.dir);
+			}
+		} else {
+			// fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
+			break; // No hit, terminate path
 		}
-		color = color + materials[hit.matIndex].emission; // Add emissive component
-		accumBuffer[idx] = accumBuffer[idx] + color;
-		fb[idx] = toRGBA8(accumBuffer[idx] / (float)(frameIndex + 1)); // Average color over frames
-	} else {
-		fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
 	}
+	accumBuffer[idx] = accumBuffer[idx] + finalColor;
+	fb[idx] = toRGBA8(accumBuffer[idx] / (float)(frameIndex + 1)); // Average color over frames
 }
 
 
