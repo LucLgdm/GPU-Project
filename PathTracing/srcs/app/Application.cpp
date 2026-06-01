@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/14 13:39:01 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/01 15:36:26 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,13 +25,16 @@ Application::~Application() {
 
 void Application::init(char *pathScene) {
 	initGLFW();
+	
 	_renderer = std::make_unique<Renderer>();
-	_renderer->init(_width, _height);
+	_renderer->initOpenGL(_width, _height);
 	_computer = std::make_unique<Compute>(_height, _width);
 	_scene = std::make_unique<Scene>();
 	_scene->load(pathScene);
 	_camera.init(_window, _width, _height);
 	// _imguiLayer.init(_window);
+	
+	_renderer->initCuda();
 	glfwSetWindowUserPointer(_window, this);
 	std::cout << "\033[32m[Application]\033[0m \033[33m	Initialisation completed !\033[0m" << std::endl;
 }

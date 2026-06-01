@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:01:32 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/26 11:22:58 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/01 15:20:17 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,9 +34,10 @@ class Renderer {
 		Renderer();
 		~Renderer();
 
-		void init(int, int);
+		void initOpenGL(int, int);
 		void initShaders();
 		void createBuffers();
+		void initCuda();
 		
 		void render();
 

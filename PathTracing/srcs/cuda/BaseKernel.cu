@@ -306,6 +306,13 @@ void Compute::update(uchar4* devPtr, const SceneData& scene) {
 									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex,
 									scene.dirLights, scene.dirLightCount,
 									scene.materials);
+
+
+	// clearKernel<<<grid, block>>>(devPtr, _width, _height, (float)_frameIndex++ * 0.1f);
+	
+	cudaError_t err = cudaGetLastError();
+	if (err != cudaSuccess)
+		throw cuda_Error("Kernel launch failed: " + std::string(cudaGetErrorString(err)));
 }
 
 void Compute::resetAccumulation() {

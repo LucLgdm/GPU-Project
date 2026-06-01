@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:01:30 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/26 17:39:04 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/01 15:29:47 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ Renderer::~Renderer() {
  * Initialization
  * **********************************************************************/
 
-void Renderer::init(int width, int height) {
+void Renderer::initOpenGL(int width, int height) {
 	_width = width;
 	_height = height;
 	initShaders();
@@ -132,11 +132,23 @@ void Renderer::createBuffers() {
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, _PBO);
 	glBufferData(GL_PIXEL_UNPACK_BUFFER, _width * _height * 4, nullptr, GL_DYNAMIC_DRAW);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+}
+
+void Renderer::initCuda() {
+
+	// const GLubyte* renderer = glGetString(GL_RENDERER);
+	// const GLubyte* vendor   = glGetString(GL_VENDOR);
+
+	// std::cout << "GL vendor: " << vendor << std::endl;
+	// std::cout << "GL renderer: " << renderer << std::endl;
 
 	// =========================
 	// CUDA Registration
 	// =========================
-	cudaGraphicsGLRegisterBuffer(&_cudaPBO, _PBO, cudaGraphicsMapFlagsWriteDiscard);
+	cudaError_t err;
+	err = cudaGraphicsGLRegisterBuffer(&_cudaPBO, _PBO, cudaGraphicsMapFlagsWriteDiscard);
+	if (err != cudaSuccess)
+		throw cuda_Error(std::string("Failed to register PBO with CUDA: ") + cudaGetErrorString(err));
 }
 
 /************************************************************************
@@ -175,8 +187,19 @@ void Renderer::render() {
 uchar4* Renderer::mapPBO() {
 	uchar4* devPtr = nullptr;
 	size_t size = 0;
-	cudaGraphicsMapResources(1, &_cudaPBO, 0);
-	cudaGraphicsResourceGetMappedPointer((void**)&devPtr, &size, _cudaPBO);
+	cudaError_t err;
+
+	if (!_cudaPBO)
+		throw cuda_Error("PBO not registered with CUDA");
+	
+	err = cudaGraphicsMapResources(1, &_cudaPBO, 0);
+	if (err != cudaSuccess)
+		throw cuda_Error(std::string("Failed to map PBO with CUDA: ") + cudaGetErrorString(err));
+	
+	err = cudaGraphicsResourceGetMappedPointer((void**)&devPtr, &size, _cudaPBO);
+	if (err != cudaSuccess)
+		throw cuda_Error(std::string("Failed to get mapped pointer for PBO: ") + cudaGetErrorString(err));
+
 	return devPtr;
 }
 
