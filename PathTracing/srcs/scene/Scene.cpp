@@ -6,12 +6,15 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/15 10:39:03 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/02 11:52:42 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "Scene.hpp"
 
@@ -45,6 +48,12 @@ void Scene::freeGPU() {
 	if (_d_triangleIndices) { cudaFree(_d_triangleIndices); _d_triangleIndices = nullptr; }
 	if (_d_bvh) { cudaFree(_d_bvh); _d_bvh = nullptr; }
 	if (_d_dirLights) { cudaFree(_d_dirLights); _d_dirLights = nullptr; }
+	for (auto& texObj : _d_textureObjects) {
+		cudaDestroyTextureObject(texObj);
+	}
+	for (auto& texArray : _d_textureArrays) {
+		cudaFreeArray(texArray);
+	}
 }
 
 /************************************************************************
@@ -77,6 +86,14 @@ void Scene::load(const std::string& pathFile) {
 		mat.metallic = 0.0f;
 		mat.ior = m.ior > 0.0f ? m.ior : 1.0f;
 		mat.opacity = m.dissolve;
+		if (!m.diffuse_texname.empty()) {
+			std::string texPath = config.mtl_search_path + m.diffuse_texname;
+			std::cout << "\033[32m[Scene]\033[0m \033[33mLoading texture: " << texPath << "\033[0m\n";
+			loadTexture(texPath);
+			mat.textureID = static_cast<int>(_d_textureObjects.size() - 1);
+		} else {
+			mat.textureID = -1;
+		}
 		_materials.push_back(mat);
 	}
 
@@ -89,6 +106,7 @@ void Scene::load(const std::string& pathFile) {
 		def.metallic  = 0.0f;
 		def.ior       = 1.0f;
 		def.opacity   = 1.0f;
+		def.textureID = -1;
 		_materials.push_back(def);
 	}
 
@@ -180,13 +198,46 @@ void Scene::load(const std::string& pathFile) {
 
 	// Build BVH
 	_bvh.build(_triangles);
-	// _dirLights.push_back({ make_float3(1.0f, 1.0f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 50.0f });
-	// _dirLights.back().direction = normalize(-_dirLights.back().direction);
-	_dirLights.push_back({ make_float3(1.0f, 0.3f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 50.0f });
+	_dirLights.push_back({ make_float3(1.0f, 1.0f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.5f });
+	_dirLights.back().direction = normalize(-_dirLights.back().direction);
+	_dirLights.push_back({ make_float3(1.0f, 0.3f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.5f });
 	_dirLights.back().direction = normalize(-_dirLights.back().direction);
 
 	uploadToGPU();
 	_loaded = true;
+}
+
+void Scene::loadTexture(const std::string& path) {
+	int width, height, channels;
+	cudaArray* d_textureArray;
+	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<uchar4>();
+	std::cout << "\033[32m[Scene]\033[0m \033[33mLoading texture: " << path << "\033[0m\n";
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+	if (!data) {
+		throw inputError("Failed to load texture: " + path);
+	}
+	
+	CUDA_CHECK(cudaMallocArray(&d_textureArray, &channelDesc, width, height));
+	CUDA_CHECK(cudaMemcpy2DToArray(d_textureArray, 0, 0, data, width * sizeof(uchar4), width * sizeof(uchar4), height, cudaMemcpyHostToDevice));
+	
+	stbi_image_free(data);
+	
+	cudaResourceDesc desc = {};
+	desc.res.array.array = d_textureArray;
+	desc.resType = cudaResourceTypeArray;
+
+	cudaTextureDesc texDesc = {};
+	texDesc.addressMode[0] = cudaAddressModeWrap;
+	texDesc.addressMode[1] = cudaAddressModeWrap;
+	texDesc.filterMode = cudaFilterModeLinear;
+	texDesc.readMode = cudaReadModeNormalizedFloat;
+	texDesc.normalizedCoords = 1;
+	
+	cudaTextureObject_t textureObject;
+	CUDA_CHECK(cudaCreateTextureObject(&textureObject, &desc, &texDesc, nullptr));
+	
+	_d_textureObjects.push_back(textureObject);
+	_d_textureArrays.push_back(d_textureArray);
 }
 
 /************************************************************************
@@ -204,11 +255,16 @@ void Scene::uploadToGPU() {
 	CUDA_CHECK(cudaMalloc(&_d_materials, matBytes));
 	CUDA_CHECK(cudaMemcpy(_d_materials, _materials.data(), matBytes, cudaMemcpyHostToDevice));
 
+	CUDA_CHECK(cudaMalloc(&_textureObjects, _d_textureObjects.size() * sizeof(cudaTextureObject_t)));
+	CUDA_CHECK(cudaMemcpy(_textureObjects, _d_textureObjects.data(), _d_textureObjects.size() * sizeof(cudaTextureObject_t), cudaMemcpyHostToDevice));
+
 	_gpuData.triangles		= _d_triangles;
 	_gpuData.triangleCount	= static_cast<int>(_triangles.size());
 	_gpuData.materials		= _d_materials;
 	_gpuData.materialCount	= static_cast<int>(_materials.size());
-
+	_gpuData.textureObjects = _textureObjects;
+	_gpuData.textureCount	= static_cast<int>(_d_textureObjects.size());
+	
 	std::cout << "\033[32m[Scene]\033[0m \033[33mGPU upload done ("
 			<< triBytes / 1024 << " KB triangles, "
 			<< matBytes        << " B materials)\033[0m\n";
@@ -246,7 +302,8 @@ void Scene::uploadToGPU() {
 	_gpuData.dirLights = _d_dirLights;
 	_gpuData.dirLightCount = static_cast<int>(_dirLights.size());
 	
-	std::cout << "\033[32m[Scene]\033[0m \033[33mDirectional lights upload done ("
+	std::cout << "\033[32m[Scene]\033[0m \033[33mDirectional lights upload done : "
+			<< _gpuData.dirLightCount << " lights ("
 			<< dirLightBytes / 1024 << " KB)\033[0m\n";
 }
 

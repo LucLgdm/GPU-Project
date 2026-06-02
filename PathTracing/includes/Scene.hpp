@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/09 10:32:10 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/01 17:45:03 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,9 @@ struct SceneData {
 	Material*	materials;
 	int			materialCount;
 
+	cudaTextureObject_t*	textureObjects;
+	int						textureCount;
+
 	BVHNode*	bvhNodes;
 	int			bvhNodeCount;
 	int*		bvhTriangleIndices;
@@ -48,7 +51,7 @@ class Scene {
 		~Scene();
 		
 		void load(const std::string&);
-
+		void loadTexture(const std::string&);
 		const std::vector<Triangle>& getTriangles() const { return _triangles; }
 		const std::vector<Material>& getMaterials()  const { return _materials; }
 		const BVH& getBVH() const { return _bvh; }
@@ -74,6 +77,10 @@ class Scene {
 		int*		_d_triangleIndices = nullptr;
 		
 		DirLight*	_d_dirLights = nullptr;
+		
+		cudaTextureObject_t* _textureObjects = nullptr;
+		std::vector<cudaTextureObject_t> _d_textureObjects;
+		std::vector<cudaArray*> _d_textureArrays;
 		
 		SceneData	_gpuData = {};
 		bool		_loaded  = false;

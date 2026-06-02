@@ -25,11 +25,12 @@ struct Ray {
 };
 
 struct HitRecord {
+	int matIndex;
 	float t;
 	float3 posImpact;
 	float3 normal;
-	int matIndex;
 	bool hit;
+	float2 uv;
 };
 
 __device__ float intersect(Ray r, Triangle tri) {

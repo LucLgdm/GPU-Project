@@ -142,6 +142,10 @@ __device__ bool intersectBVH(const Ray& ray, const BVHNode* nodes, const int* in
 					hit.normal = computeNormal(triangles[triIdx]);
 					hit.posImpact = ray.at(t);
 					hit.matIndex = triangles[triIdx].materialIndex;
+					hit.uv = make_float2(
+						(1.0f - u - v) * triangles[triIdx].v0.uv.x + u * triangles[triIdx].v1.uv.x + v * triangles[triIdx].v2.uv.x,
+						(1.0f - u - v) * triangles[triIdx].v0.uv.y + u * triangles[triIdx].v1.uv.y + v * triangles[triIdx].v2.uv.y
+					);
 				}
 			}
 		} else {
@@ -159,7 +163,7 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 								const Triangle* triangles, int triCount,
 								const BVHNode* nodes, const int* bvhIndices, int rootIndex,
 								const DirLight* dirLights, int dirLightCount,
-								const Material* materials) {
+								const Material* materials, const cudaTextureObject_t* textures) {
 	
 	// x and y are the pixel coordinate
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -202,7 +206,14 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 
 				float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
 
-				color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
+
+				if (materials[hit.matIndex].textureID != -1) {
+					float4 texColor = tex2D<float4>(textures[materials[hit.matIndex].textureID], hit.uv.x, hit.uv.y);
+					float3 finalColTex = make_float3(texColor.x, texColor.y, texColor.z);
+					color = color + finalColTex * light.color * NdotL * light.intensity;
+				} else {
+					color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
+				}
 			}
 			color = color + materials[hit.matIndex].emission; // Add emissive component
 			finalColor = finalColor + throughput * color;
@@ -291,8 +302,10 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 			break; // No hit, terminate path
 		}
 	}
+
 	accumBuffer[idx] = accumBuffer[idx] + finalColor;
 	fb[idx] = toRGBA8(accumBuffer[idx] / (float)(frameIndex + 1)); // Average color over frames
+	// fb[idx] = toRGBA8(finalColor);
 }
 
 
@@ -305,7 +318,7 @@ void Compute::update(uchar4* devPtr, const SceneData& scene) {
 									scene.triangles, scene.triangleCount,
 									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex,
 									scene.dirLights, scene.dirLightCount,
-									scene.materials);
+									scene.materials, scene.textureObjects);
 
 
 	// clearKernel<<<grid, block>>>(devPtr, _width, _height, (float)_frameIndex++ * 0.1f);

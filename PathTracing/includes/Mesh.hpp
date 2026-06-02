@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:28:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/31 13:48:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/01 17:14:40 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,12 @@ struct Triangle {
 };
 
 struct Material {
-    float3 albedo;       // Kd — couleur diffuse
-    float3 emission;     // Ke — lumière émise (0 si pas une source)
-    float  roughness;    // 1 - Ns normalisé
-    float  metallic;     // 0 ou 1 selon le workflow
-    float  ior;          // Ni — indice de réfraction (verre = 1.5)
-    float  opacity;      // d — 1.0 = opaque
+    float3	albedo;       // Kd — couleur diffuse
+    float3	emission;     // Ke — lumière émise (0 si pas une source)
+    float	roughness;    // 1 - Ns normalisé
+    float	metallic;     // 0 ou 1 selon le workflow
+    float	ior;          // Ni — indice de réfraction (verre = 1.5)
+    float	opacity;      // d — 1.0 = opaque
+	int		textureID;    // -1 si pas de texture, sinon index dans le tableau de textures
 };
 

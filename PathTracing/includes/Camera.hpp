@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/14 13:39:15 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/02 11:43:21 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ class Camera {
 		// Keys
 		std::map<int, KeyState> _keys;
 		// Move
-		float _moveSpeed = 0.03f;
+		float _moveSpeed = 0.3f;
 		float _yaw = -90.0f, _pitch = 0.0f;
 		float _sensitivity = 0.2f;
 
