@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/04 15:12:36 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/04 15:49:52 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,16 @@ Application::~Application() {
  * Initialization
  * **********************************************************************/
 
-void Application::init(char *pathScene) {
+void Application::init(char **argv) {
 	initGLFW();
 	
 	_renderer = std::make_unique<Renderer>();
 	_renderer->initOpenGL(_width, _height);
 	_computer = std::make_unique<Compute>(_height, _width);
 	_scene = std::make_unique<Scene>();
-	_scene->load(pathScene);
+	int i = 1;
+	while(argv[i])
+		_scene->load(argv[i++]);
 	_camera.init(_window, _width, _height);
 	_imguiLayer.init(_window);
 	
