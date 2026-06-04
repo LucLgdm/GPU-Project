@@ -6,11 +6,13 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/01 15:36:26 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/04 15:12:36 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Application.hpp"
+
+static bool hPressed = false;
 
 Application::Application() { }
 
@@ -32,7 +34,7 @@ void Application::init(char *pathScene) {
 	_scene = std::make_unique<Scene>();
 	_scene->load(pathScene);
 	_camera.init(_window, _width, _height);
-	// _imguiLayer.init(_window);
+	_imguiLayer.init(_window);
 	
 	_renderer->initCuda();
 	glfwSetWindowUserPointer(_window, this);
@@ -98,7 +100,6 @@ void Application::run() {
 		handleKey();
 		_camera.updatePos(_window);
 		_camera.updatePlan();
-		
 		if (_camera.isUpdated()) {
 			_computer->resetAccumulation();
 			_camera.setUpdated(false);
@@ -109,6 +110,13 @@ void Application::run() {
 		_renderer->unmapPBO();
 		
 		_renderer->render();
+
+		if (hPressed) {
+			_imguiLayer.beginFrame();
+			_imguiLayer.render();
+			_imguiLayer.endFrame();
+		}
+		
 		glfwSwapBuffers(_window);
 		glfwPollEvents();	
 	}
@@ -122,7 +130,7 @@ void Application::run() {
 void Application::handleKey() {
 	static bool f11Pressed = false;
 
-	// --- Fullscreen toggle ---
+		// --- Fullscreen toggle ---
 	bool f11Now = (glfwGetKey(_window, GLFW_KEY_F11) == GLFW_PRESS);
 	if (f11Now && !f11Pressed && !_fullscreen) {
 		toggleFullscreen();   // ta fonction qui gère le passage full screen
@@ -143,6 +151,16 @@ void Application::handleKey() {
 		}
 	}
 	escPressed = escNow;
+
+		// --- UI toggle ---
+	bool hNow = (glfwGetKey(_window, GLFW_KEY_H) == GLFW_PRESS);
+	static bool hHandled = false;
+	if (hNow && !hHandled) {
+		hPressed = !hPressed;
+		hHandled = true;
+	} else if (!hNow) {
+		hHandled = false;
+	}
 }
 
 void Application::toggleFullscreen() {

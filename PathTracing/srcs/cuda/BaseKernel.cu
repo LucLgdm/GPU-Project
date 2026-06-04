@@ -255,59 +255,14 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 			ray.origin = hit.posImpact + N * 0.001f;
 			ray.dir = normalize(newDir);
 
-
-
-			// throughput = throughput * materials[hit.matIndex].albedo; // Update throughput for next bounce
-
-			// // Russian roulette termination
-			// if (j > 0) {
-			// 	float r1 = randFloat(seed), r2 = randFloat(seed);
-
-			// 	float phi = 2.0f * M_PI * r1;
-			// 	float cosTheta = sqrtf(1.0f - r2);
-			// 	float sinTheta = sqrtf(r2);
-
-			// 	float3 localDir = make_float3(cosf(phi) * sinTheta, sinf(phi) * sinTheta, cosTheta);
-
-			// 	float3 N = normalize(hit.normal);
-			// 	// Choose a non parallel vector to N
-			// 	float3 helper = fabs(N.y) < 0.999f
-			// 		? make_float3(0.0f, 1.0f, 0.0f) : make_float3(1.0f, 0.0f, 0.0f);
-
-			// 	float3 T = normalize(vecProd(helper, N));
-			// 	float3 B = vecProd(N, T);
-			// 	ray.origin = hit.posImpact + hit.normal * 0.001f; // Offset to avoid self-intersection
-			// 	// Random diffuse bounce
-			// 	// Local spherical coordinates to world space
-			// 	// float3 localDir = make_float3(sinf(theta) * cosf(phi), sinf(theta) * sinf(phi), cosf(theta));
-
-			// 	ray.dir = localDir.x * T + localDir.y * B + localDir.z * hit.normal;
-			// 	ray.dir = normalize(ray.dir);
-			// }
-			// // Russian roulette termination after 3 bounces to avoid infinite loops and reduce noise
-			// // If there is a lot of light, we want to keep the path alive longer,
-			// // so we use the throughput as a probability factor
-			// if (j > 3) {
-			// 	float p = fmaxf(throughput.x, fmaxf(throughput.y, throughput.z));
-
-			// 	p = fminf(p, 0.95f); // éviter p = 1
-
-			// 	if (randFloat(seed) > p)
-			// 		break;
-
-			// 	throughput = throughput / p;
-			// }
 		} else {
-			// fb[idx] = toRGBA8(make_float3(0.0f, 0.0f, 0.6f));
 			break; // No hit, terminate path
 		}
 	}
 
 	accumBuffer[idx] = accumBuffer[idx] + finalColor;
 	fb[idx] = toRGBA8(accumBuffer[idx] / (float)(frameIndex + 1)); // Average color over frames
-	// fb[idx] = toRGBA8(finalColor);
 }
-
 
 // Lancement kernel
 void Compute::update(uchar4* devPtr, const SceneData& scene) {
@@ -320,9 +275,6 @@ void Compute::update(uchar4* devPtr, const SceneData& scene) {
 									scene.dirLights, scene.dirLightCount,
 									scene.materials, scene.textureObjects);
 
-
-	// clearKernel<<<grid, block>>>(devPtr, _width, _height, (float)_frameIndex++ * 0.1f);
-	
 	cudaError_t err = cudaGetLastError();
 	if (err != cudaSuccess)
 		throw cuda_Error("Kernel launch failed: " + std::string(cudaGetErrorString(err)));

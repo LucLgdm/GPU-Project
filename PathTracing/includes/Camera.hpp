@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/02 11:43:21 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/04 15:08:56 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,11 +71,14 @@ class Camera {
 
 		float _fov;
 		float _aspect;
+		
 		// Mouse
 		int _lastX, _lastY;
 		bool _rotating = false, _firstMouse = false;
+		
 		// Keys
 		std::map<int, KeyState> _keys;
+		
 		// Move
 		float _moveSpeed = 0.3f;
 		float _yaw = -90.0f, _pitch = 0.0f;

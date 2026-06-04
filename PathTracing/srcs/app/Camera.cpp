@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/15 10:12:40 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/04 15:11:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ glm::mat4 Camera::getProjection(float aspectRatio) {
 }
 
 void Camera::updateProjectionMatrix(int width, int height) {
-			float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-			_projectionMatrix = glm::perspective(glm::radians(30.0f), aspectRatio, 0.1f, 3000.0f);
+	float aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+	_projectionMatrix = glm::perspective(glm::radians(30.0f), aspect_ratio, 0.1f, 3000.0f);
 }
 
 void Camera::beginRotate() {
@@ -83,7 +83,6 @@ void Camera::processMouseMove(float xpos, float ypos) {
 	_updated = true;
 }
 
-
 void Camera::updatePos(GLFWwindow *window) {
 	// Recalculate forward
 	glm::vec3 forward;
@@ -117,7 +116,6 @@ void Camera::resetMouse(float x, float y) {
 	_lastX = x;
 	_lastY = y;
 }
-
 
 void Camera::updatePlan() {
 	glm::vec3 w = normalize(_eye - _target);

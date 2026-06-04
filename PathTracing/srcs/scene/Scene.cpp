@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/02 11:52:42 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/04 13:47:02 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -198,9 +198,9 @@ void Scene::load(const std::string& pathFile) {
 
 	// Build BVH
 	_bvh.build(_triangles);
-	_dirLights.push_back({ make_float3(1.0f, 1.0f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.5f });
-	_dirLights.back().direction = normalize(-_dirLights.back().direction);
-	_dirLights.push_back({ make_float3(1.0f, 0.3f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.5f });
+	// _dirLights.push_back({ make_float3(1.0f, 1.0f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.5f });
+	// _dirLights.back().direction = normalize(-_dirLights.back().direction);
+	_dirLights.push_back({ make_float3(1.0f, 0.3f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.2f });
 	_dirLights.back().direction = normalize(-_dirLights.back().direction);
 
 	uploadToGPU();
