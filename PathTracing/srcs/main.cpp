@@ -6,21 +6,17 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/23 15:52:53 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/04 15:48:54 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/05 10:21:37 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Application.hpp"
 
-int main(int argc, char **argv) {
+int main() {
 	std::cout << "\033[32mHello Path Tracer GPU!\033[0m" << std::endl;
-	if (argc != 2) {
-		std::cerr << "\033[31mPath Tracer needs a scene...\033[0m" << std::endl;
-		return 1;
-	}
 	Application app;
 	try {
-		app.init(argv);
+		app.init();
 		app.run();
 	} catch (inputError &e) {
 		std::cerr << "\033[31mInput error: " << std::endl << e.what() << "\033[0m"<< std::endl;

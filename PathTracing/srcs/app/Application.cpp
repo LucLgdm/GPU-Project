@@ -6,13 +6,13 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/04 15:49:52 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/09 16:57:29 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Application.hpp"
 
-static bool hPressed = false;
+static bool hPressed = true;
 
 Application::Application() { }
 
@@ -25,20 +25,19 @@ Application::~Application() {
  * Initialization
  * **********************************************************************/
 
-void Application::init(char **argv) {
+void Application::init() {
 	initGLFW();
 	
 	_renderer = std::make_unique<Renderer>();
 	_renderer->initOpenGL(_width, _height);
+	
 	_computer = std::make_unique<Compute>(_height, _width);
 	_scene = std::make_unique<Scene>();
-	int i = 1;
-	while(argv[i])
-		_scene->load(argv[i++]);
 	_camera.init(_window, _width, _height);
 	_imguiLayer.init(_window);
 	
-	_renderer->initCuda();
+	// _renderer->initCuda();
+	
 	glfwSetWindowUserPointer(_window, this);
 	std::cout << "\033[32m[Application]\033[0m \033[33m	Initialisation completed !\033[0m" << std::endl;
 }
@@ -97,31 +96,40 @@ void Application::run() {
 	std::cout << "\033[32m[Application]\033[0m\033[33m	Running!\033[0m" << std::endl;
 	float currentTime = glfwGetTime();
 	while (!glfwWindowShouldClose(_window)) {
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+		
 		float deltaTime = glfwGetTime() - currentTime;
 		currentTime = glfwGetTime();
 		handleKey();
+		
 		_camera.updatePos(_window);
 		_camera.updatePlan();
+		
 		if (_camera.isUpdated()) {
 			_computer->resetAccumulation();
 			_camera.setUpdated(false);
 		}
 		
-		uchar4 *devPtr = _renderer->mapPBO();
-		_computer->update(devPtr, _scene->getGpuData());
-		_renderer->unmapPBO();
-		
-		_renderer->render();
+		// if (_scene->isLoaded()) {
+		// 	uchar4 *devPtr = _renderer->mapPBO();
+		// 	_computer->update(devPtr, _scene->getGpuData());
+		// 	_renderer->unmapPBO();
+		// 	_renderer->render();
+		// }
 
 		if (hPressed) {
 			_imguiLayer.beginFrame();
-			_imguiLayer.render();
+			_imguiLayer.render(_scene.get());
+			if (_imguiLayer.getError())
+				_imguiLayer.renderError();
 			_imguiLayer.endFrame();
 		}
 		
 		glfwSwapBuffers(_window);
 		glfwPollEvents();	
 	}
+	_imguiLayer.shutdown();
 }
 
 

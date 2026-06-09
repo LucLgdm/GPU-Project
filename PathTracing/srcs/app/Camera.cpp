@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/04 15:11:53 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/05 09:39:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,8 @@ void Camera::init(GLFWwindow *window, int width, int height) {
 	
 	_aspect = (float)width / height;
 	_projectionMatrix = glm::perspective(glm::radians(_fov / 2.0f), _aspect, 0.1f, 3000.0f);
-
+	
+	std::cout << "\033[32m[Camera]\033[0m \033[33mCamera initialized.\033[0m" << std::endl;
 }
 
 glm::mat4 Camera::getView() {

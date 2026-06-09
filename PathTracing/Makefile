@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/06/01 15:34:57 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/06/09 16:58:11 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,6 +67,7 @@ clean: ## Clean object files
 
 fclean: clean ## Clean object files and executable
 	@rm -f $(NAME)
+	@rm -f imgui.ini
 	@printf "\033[35mDeleted everything!\n\033[0m"
 	
 re: fclean all ## Rebuild

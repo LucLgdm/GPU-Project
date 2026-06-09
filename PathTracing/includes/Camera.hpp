@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/04 15:08:56 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/05 09:38:35 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 
 #include <map>
+#include <iostream>
 #include "CameraData.hpp"
 
 struct GLFWwindow;

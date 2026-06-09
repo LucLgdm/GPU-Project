@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/01 17:45:03 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/09 16:53:07 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,10 +17,10 @@
 #include <iostream>
 #include <stdexcept>
 #include <cmath>
-#include <cassert>
 
 #include "Exception.hpp"
 #include "BVH.hpp"
+#include "SceneObject.hpp"
 #include "Light.hpp"
 #include "MathUtils.cuh"
 
@@ -50,41 +50,44 @@ class Scene {
 		Scene();
 		~Scene();
 		
-		void load(const std::string&);
+		void addObject(std::string, std::string);
 		void loadTexture(const std::string&);
-		const std::vector<Triangle>& getTriangles() const { return _triangles; }
-		const std::vector<Material>& getMaterials()  const { return _materials; }
+
+		std::vector<Triangle> getMergedTriangles() const;
+		std::vector<Material> getMergedMaterials() const;
+
 		const BVH& getBVH() const { return _bvh; }
-	
-		// Struct prête à être passée au kernel CUDA
+
+
+		// Struct ready to be sent to the kernel
 		SceneData getGpuData() const { return _gpuData; }
 	
 		bool isLoaded() const { return _loaded; }
 		
 	private:
 		// CPU side
-		std::vector<Triangle> _triangles;
-		std::vector<Material> _materials;
+		std::vector<SceneObject> _objects;
+		std::vector<std::string> _objectsName;
 		std::vector<DirLight> _dirLights;
 		BVH _bvh;
 	
-		// GPU side
-		Triangle*	_d_triangles = nullptr;
-		Material*	_d_materials = nullptr;
+		std::vector<cudaTextureObject_t> _textureObjects;
+		std::vector<cudaArray*> _d_textureArrays;
 		
+		// GPU side
 		BVH*		_d_bvh = nullptr;
 		BVHNode*	_d_nodes = nullptr;
 		int*		_d_triangleIndices = nullptr;
 		
 		DirLight*	_d_dirLights = nullptr;
 		
-		cudaTextureObject_t* _textureObjects = nullptr;
-		std::vector<cudaTextureObject_t> _d_textureObjects;
-		std::vector<cudaArray*> _d_textureArrays;
+		cudaTextureObject_t* _d_textureObjects;
 		
+		// Data struct pour le kernel
 		SceneData	_gpuData = {};
 		bool		_loaded  = false;
 
+		// Helper
 		void	uploadToGPU();
 		void	freeGPU();
 };

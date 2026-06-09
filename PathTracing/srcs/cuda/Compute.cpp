@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 11:20:05 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/14 13:34:51 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/05 09:42:49 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,13 @@
 
 Compute::Compute(int height, int width): _height(height), _width(width) {
 	cudaMalloc(&_accumBuffer, height * width * sizeof(float3));
+	std::cout << "\033[32m[Compute]\033[0m \033[33mInitialized with resolution " << width << "x" << height << "\033[0m\n";
 }
 
 Compute::~Compute() {
-	cudaFree(_accumBuffer);
+	if (_accumBuffer) {
+		cudaFree(_accumBuffer);
+		_accumBuffer = nullptr;
+	}
 }
 
