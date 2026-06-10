@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:54:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/09 15:24:17 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/10 16:22:44 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,11 +36,10 @@ class ImGuiLayer {
 		void shutdown();
 
 		void sceneLoader(Scene* scene);
-
+		void displayListObject(Scene* scene);
 		void renderError();
 		
-		int getError() { return _error; };
-		
 	private:
-		int _error = 0;
+		std::string _errorMessage;
+		bool _showErrorPopup = false;
 };

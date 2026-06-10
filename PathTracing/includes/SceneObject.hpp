@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 16:15:10 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/09 16:56:43 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/10 17:27:22 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ class SceneObject {
 
 		std::vector<Triangle> getTriangles() const { return _triangles; }
 		std::vector<Material> getMaterials() const { return _materials; }
-		std::vector<std::string> getTexturePaths() const { return _texturesPath; };
+		std::vector<std::string> getTexturePaths() const { return _texturesPath; }
+		size_t getTriangleCount() const { return _triangles.size(); }
 		
 		void freeGPU();
 	private:

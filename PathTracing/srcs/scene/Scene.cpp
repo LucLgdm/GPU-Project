@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/10 13:50:38 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/10 17:39:48 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ void Scene::freeGPU() {
 }
 
 /************************************************************************
- * Initialization
+ * Create Scene
  * **********************************************************************/
 
 void Scene::addObject(std::string filePath, std::string fileName) {
@@ -88,6 +88,10 @@ void Scene::addObject(std::string filePath, std::string fileName) {
 
 	uploadToGPU();
 	_loaded = _objects.size() != 0 ? true : false;
+}
+
+void Scene::removeObject(int index) {
+	
 }
 
 std::vector<Triangle> Scene::getMergedTriangles() const {

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/10 13:31:09 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/10 17:39:10 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,14 +53,16 @@ class Scene {
 		void addObject(std::string, std::string);
 		void loadTexture(const std::string&);
 
+		void removeObject(int);
+
 		std::vector<Triangle> getMergedTriangles() const;
 		std::vector<Material> getMergedMaterials() const;
 
 		const BVH& getBVH() const { return _bvh; }
-
-
-		// Struct ready to be sent to the kernel
-		SceneData getGpuData() const { return _gpuData; }
+		SceneData getGpuData() const { return _gpuData; } // Struct ready to be sent to the kernel
+		std::vector<SceneObject>& getObjects() { return _objects; };
+		const std::vector<std::string>& getObjName() const { return _objectsName; };
+		const std::vector<SceneObject>& getObjects() const { return _objects; };
 	
 		bool isLoaded() const { return _loaded; }
 		
