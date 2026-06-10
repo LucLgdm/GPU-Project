@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/09 16:56:48 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/10 13:50:38 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ void Scene::addObject(std::string filePath, std::string fileName) {
 	int texOffset = static_cast<int>(_textureObjects.size());
 		// load
 	for (const auto& texPath : obj.getTexturePaths())
-		loadTexture(texPath);  // ajoute dans _textureObjects
+		loadTexture(texPath);  // Add in _textureObjects
 		// Reorder indexes
 	for (auto& mat : obj.getMaterials()) {
 		if (mat.textureID != -1)
@@ -83,11 +83,11 @@ void Scene::addObject(std::string filePath, std::string fileName) {
 	_bvh.build(getMergedTriangles());
 	
 		// Lights (for testing, should be loaded from file)
-	// _dirLights.push_back({ make_float3(1.0f, 0.3f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.2f });
-	// _dirLights.back().direction = normalize(-_dirLights.back().direction);
+	_dirLights.push_back({ make_float3(1.0f, 1.0f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.2f });
+	_dirLights.back().direction = normalize(-_dirLights.back().direction);
 
-	// uploadToGPU();
-	_loaded = true;
+	uploadToGPU();
+	_loaded = _objects.size() != 0 ? true : false;
 }
 
 std::vector<Triangle> Scene::getMergedTriangles() const {
@@ -104,15 +104,15 @@ std::vector<Triangle> Scene::getMergedTriangles() const {
 	return merged;
 }
 
-// std::vector<Material> Scene::getMergedMaterials() const {
-// 	std::vector<Material> merged;
+std::vector<Material> Scene::getMergedMaterials() const {
+	std::vector<Material> merged;
 
-// 	for (const auto& obj : _objects) {
-// 		const auto& mats = obj.getMaterials();
-// 		merged.insert(merged.end(), mats.begin(), mats.end());
-// 	}
-// 	return merged;
-// }
+	for (const auto& obj : _objects) {
+		const auto& mats = obj.getMaterials();
+		merged.insert(merged.end(), mats.begin(), mats.end());
+	}
+	return merged;
+}
 
 
 void Scene::loadTexture(const std::string& path) {
@@ -151,39 +151,45 @@ void Scene::loadTexture(const std::string& path) {
 /************************************************************************
  * Upload to GPU
  * **********************************************************************/
-
- /*
-
-
 void Scene::uploadToGPU() {
 		// Fusionner depuis les objets
-    std::vector<Triangle> triangles = getMergedTriangles();
-    std::vector<Material> materials = getMergedMaterials();
+	std::vector<Triangle> triangles = getMergedTriangles();
+	std::vector<Material> materials = getMergedMaterials();
 
-    	// --- TRIANGLES ---
-    size_t triBytes = triangles.size() * sizeof(Triangle);
-    Triangle* d_triangles = nullptr;
-    CUDA_CHECK(cudaMalloc(&d_triangles, triBytes));
-    CUDA_CHECK(cudaMemcpy(d_triangles, triangles.data(), triBytes, cudaMemcpyHostToDevice));
+		// --- TRIANGLES ---
+	size_t triBytes = triangles.size() * sizeof(Triangle);
+	Triangle* d_triangles = nullptr;
+	CUDA_CHECK(cudaMalloc(&d_triangles, triBytes));
+	CUDA_CHECK(cudaMemcpy(d_triangles, triangles.data(), triBytes, cudaMemcpyHostToDevice));
 
-    	// --- MATERIALS ---
-    size_t matBytes = materials.size() * sizeof(Material);
-    Material* d_materials = nullptr;
-    CUDA_CHECK(cudaMalloc(&d_materials, matBytes));
-    CUDA_CHECK(cudaMemcpy(d_materials, materials.data(), matBytes, cudaMemcpyHostToDevice));
+		// --- MATERIALS ---
+	size_t matBytes = materials.size() * sizeof(Material);
+	Material* d_materials = nullptr;
+	CUDA_CHECK(cudaMalloc(&d_materials, matBytes));
+	CUDA_CHECK(cudaMemcpy(d_materials, materials.data(), matBytes, cudaMemcpyHostToDevice));
 
-    	// --- TEXTURES ---
-    CUDA_CHECK(cudaMalloc(&_d_textureObjects, _textureObjects.size() * sizeof(cudaTextureObject_t)));
-    CUDA_CHECK(cudaMemcpy(_d_textureObjects, _textureObjects.data(),
-               _textureObjects.size() * sizeof(cudaTextureObject_t), cudaMemcpyHostToDevice));
+		// --- TEXTURES ---
+	// CUDA_CHECK(cudaMalloc(&_d_textureObjects, _textureObjects.size() * sizeof(cudaTextureObject_t)));
+	// CUDA_CHECK(cudaMemcpy(_d_textureObjects, _textureObjects.data(),
+	// 		_textureObjects.size() * sizeof(cudaTextureObject_t), cudaMemcpyHostToDevice));
 
-    	// --- GPU DATA ---
-    _gpuData.triangles      = d_triangles;
-    _gpuData.triangleCount  = static_cast<int>(triangles.size());
-    _gpuData.materials      = d_materials;
-    _gpuData.materialCount  = static_cast<int>(materials.size());
-    _gpuData.textureObjects = _d_textureObjects;
-    _gpuData.textureCount   = static_cast<int>(_textureObjects.size());
+	if (!_textureObjects.empty()) {
+		CUDA_CHECK(cudaMalloc(&_d_textureObjects, _textureObjects.size() * sizeof(cudaTextureObject_t)));
+		CUDA_CHECK(cudaMemcpy(_d_textureObjects, _textureObjects.data(),
+				_textureObjects.size() * sizeof(cudaTextureObject_t), cudaMemcpyHostToDevice));
+		_gpuData.textureObjects = _d_textureObjects;
+	} else {
+		_gpuData.textureObjects = nullptr;
+	}
+	_gpuData.textureCount = static_cast<int>(_textureObjects.size());
+
+		// --- GPU DATA ---
+	_gpuData.triangles      = d_triangles;
+	_gpuData.triangleCount  = static_cast<int>(triangles.size());
+	_gpuData.materials      = d_materials;
+	_gpuData.materialCount  = static_cast<int>(materials.size());
+	_gpuData.textureObjects = _d_textureObjects;
+	_gpuData.textureCount   = static_cast<int>(_textureObjects.size());
 	
 	std::cout << "\033[32m[Scene]\033[0m \033[33mGPU upload done ("
 			<< triBytes / 1024 << " KB triangles, "
@@ -216,15 +222,23 @@ void Scene::uploadToGPU() {
 
 	// --- DIRECTIONAL LIGHTS ---
 	size_t dirLightBytes = _dirLights.size() * sizeof(DirLight);
-	CUDA_CHECK(cudaMalloc(&_d_dirLights, dirLightBytes));
-	CUDA_CHECK(cudaMemcpy(_d_dirLights, _dirLights.data(), dirLightBytes, cudaMemcpyHostToDevice));
+	// CUDA_CHECK(cudaMalloc(&_d_dirLights, dirLightBytes));
+	// CUDA_CHECK(cudaMemcpy(_d_dirLights, _dirLights.data(), dirLightBytes, cudaMemcpyHostToDevice));
 
-	_gpuData.dirLights = _d_dirLights;
+	// _gpuData.dirLights = _d_dirLights;
+	// _gpuData.dirLightCount = static_cast<int>(_dirLights.size());
+
+	if (!_dirLights.empty()) {
+		size_t dirLightBytes = _dirLights.size() * sizeof(DirLight);
+		CUDA_CHECK(cudaMalloc(&_d_dirLights, dirLightBytes));
+		CUDA_CHECK(cudaMemcpy(_d_dirLights, _dirLights.data(), dirLightBytes, cudaMemcpyHostToDevice));
+		_gpuData.dirLights = _d_dirLights;
+	} else {
+		_gpuData.dirLights = nullptr;
+	}
 	_gpuData.dirLightCount = static_cast<int>(_dirLights.size());
 	
 	std::cout << "\033[32m[Scene]\033[0m \033[33mDirectional lights upload done : "
 			<< _gpuData.dirLightCount << " lights ("
 			<< dirLightBytes / 1024 << " KB)\033[0m\n";
 }
-
-*/

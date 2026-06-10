@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/09 16:57:29 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/10 13:44:16 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void Application::init() {
 	_camera.init(_window, _width, _height);
 	_imguiLayer.init(_window);
 	
-	// _renderer->initCuda();
+	_renderer->initCuda();
 	
 	glfwSetWindowUserPointer(_window, this);
 	std::cout << "\033[32m[Application]\033[0m \033[33m	Initialisation completed !\033[0m" << std::endl;
@@ -111,12 +111,12 @@ void Application::run() {
 			_camera.setUpdated(false);
 		}
 		
-		// if (_scene->isLoaded()) {
-		// 	uchar4 *devPtr = _renderer->mapPBO();
-		// 	_computer->update(devPtr, _scene->getGpuData());
-		// 	_renderer->unmapPBO();
-		// 	_renderer->render();
-		// }
+		if (_scene->isLoaded()) {
+			uchar4 *devPtr = _renderer->mapPBO();
+			_computer->update(devPtr, _scene->getGpuData());
+			_renderer->unmapPBO();
+			_renderer->render();
+		}
 
 		if (hPressed) {
 			_imguiLayer.beginFrame();
