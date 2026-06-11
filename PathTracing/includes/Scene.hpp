@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/10 17:39:10 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/11 13:22:23 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ class Scene {
 		void addObject(std::string, std::string);
 		void loadTexture(const std::string&);
 
-		void removeObject(int);
+		void removeObject(size_t);
 
 		std::vector<Triangle> getMergedTriangles() const;
 		std::vector<Material> getMergedMaterials() const;
@@ -65,6 +65,9 @@ class Scene {
 		const std::vector<SceneObject>& getObjects() const { return _objects; };
 	
 		bool isLoaded() const { return _loaded; }
+		bool isUpdated() const { return _SceneUpdated; }
+		
+		void nonUpdated() { _SceneUpdated = !_SceneUpdated; }
 		
 	private:
 		// CPU side
@@ -86,8 +89,9 @@ class Scene {
 		cudaTextureObject_t* _d_textureObjects;
 		
 		// Data struct pour le kernel
-		SceneData	_gpuData = {};
+		bool		_SceneUpdated = false;
 		bool		_loaded  = false;
+		SceneData	_gpuData = {};
 
 		// Helper
 		void	uploadToGPU();

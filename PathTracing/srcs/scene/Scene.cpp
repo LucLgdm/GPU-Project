@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/10 17:39:48 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/11 13:09:17 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,12 +86,20 @@ void Scene::addObject(std::string filePath, std::string fileName) {
 	_dirLights.push_back({ make_float3(1.0f, 1.0f, 0.0f), make_float3(5.0f, 5.0f, 5.0f), 0.2f });
 	_dirLights.back().direction = normalize(-_dirLights.back().direction);
 
-	uploadToGPU();
+	_SceneUpdated = true;
 	_loaded = _objects.size() != 0 ? true : false;
+	uploadToGPU();
 }
 
-void Scene::removeObject(int index) {
-	
+void Scene::removeObject(size_t index) {
+	if (index >= _objects.size() || index >= _objectsName.size())
+    	return;
+	_objects.erase(_objects.begin() + index);
+	_objectsName.erase(_objectsName.begin() + index);
+	_bvh.build(getMergedTriangles());
+	_SceneUpdated = true;
+	_loaded = _objects.size() != 0 ? true : false;
+	uploadToGPU();
 }
 
 std::vector<Triangle> Scene::getMergedTriangles() const {

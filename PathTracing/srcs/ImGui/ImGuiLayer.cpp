@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:56:58 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/10 17:38:39 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/11 13:10:11 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,25 +85,24 @@ void ImGuiLayer::sceneLoader(Scene* scene) {
 
 void ImGuiLayer::displayListObject(Scene* scene) {
 	static int selectedObject = -1;
-	if (ImGui::BeginTable("SceneObjects", 1)) {
+	if (ImGui::BeginTable("SceneObjects", 2)) {
 		for (int i = 0; i < scene->getObjects().size(); ++i) {
-			auto& object = scene->getObjects()[i];
-
 			ImGui::TableNextRow();
+
 			ImGui::TableSetColumnIndex(0);
 
-			ImGui::TableSetColumnIndex(1);
-
-			if (ImGui::Button(("Delete##" + std::to_string(i)).c_str()))
-			{
-				scene.removeObject(i);
-				break;
-			}
-		
 			bool selected = (selectedObject == i);
 
 			if (ImGui::Selectable(scene->getObjName()[i].c_str(), selected))
 				selectedObject = i;
+
+			ImGui::TableSetColumnIndex(1);
+
+			if (ImGui::Button(("Delete##" + std::to_string(i)).c_str())) {
+				scene->removeObject(i);
+				selectedObject = -1;
+				break;
+			}
 		}
 		ImGui::EndTable();
 	}
@@ -116,6 +115,7 @@ void ImGuiLayer::displayListObject(Scene* scene) {
 		ImGui::Separator();
 		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Object Properties");
 
+		size_t count = object.getTriangleCount();
 		ImGui::Text("Name: %s", scene->getObjName()[selectedObject].c_str());
 		ImGui::Text("Triangles: %llu", static_cast<long long int>(count));
 
