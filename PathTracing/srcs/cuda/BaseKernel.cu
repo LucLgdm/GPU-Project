@@ -177,7 +177,7 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 	float u = ((float)x + randFloat(seed)) / width;
 	float v = ((float)y + randFloat(seed)) / height;
 
-	float3 finalColor = make_float3(0.0f, 0.0f, 0.0f);
+	float3 finalColor = make_float3(0.1f, 0.1f, 0.1f);
 	float3 throughput = make_float3(1.0f, 1.0f, 1.0f);
 	static int maxDepth = 5;
 

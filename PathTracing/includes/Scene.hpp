@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 10:03:47 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 13:21:57 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,26 +60,22 @@ class Scene {
 		std::vector<Material> getMergedMaterials() const;
 
 		// ---Light---
-
-		void addDirLight(DirLight light) {
-			_dirLights.push_back(light);
-			_dirLights.back().direction = normalize(-_dirLights.back().direction);
-			_lightsDirty = true;
-			_SceneUpdated = true;
-
-		}
+		void addDirLight(DirLight light);
+		void removeLight(size_t);
 		
-		// ---Getter---
+		// ---Getter && Setter---
 		const BVH& getBVH() const { return _bvh; }
 		SceneData getGpuData() const { return _gpuData; } // Struct ready to be sent to the kernel
 		std::vector<SceneObject>& getObjects() { return _objects; }
 		const std::vector<std::string>& getObjName() const { return _objectsName; }
 		const std::vector<SceneObject>& getObjects() const { return _objects; }
 		const std::vector<DirLight>& getDirLights() const { return _dirLights; }
+		DirLight& getDirLight(size_t i) {return _dirLights[i]; }
 	
 		bool isLoaded() const { return _loaded; }
 		bool isUpdated() const { return _SceneUpdated; }
 		void setUpdated(bool up) { _SceneUpdated = up; }
+		void setLightDirty(bool up) { _lightsDirty = up; }
 
 		// ---From CPU to GPU---
 		void uploadTriangleToGPU();
@@ -90,7 +86,7 @@ class Scene {
 		void uploadToGPU();
 		
 	private:
-		// CPU side
+		// ---CPU side---
 		std::vector<SceneObject> _objects;
 		std::vector<std::string> _objectsName;
 		std::vector<DirLight> _dirLights;
@@ -99,7 +95,7 @@ class Scene {
 		std::vector<cudaTextureObject_t> _textureObjects;
 		std::vector<cudaArray*> _d_textureArrays;
 		
-		// GPU side
+		// ---GPU side---
 		Triangle*	_d_triangles = nullptr;
 		Material*	_d_materials = nullptr;
 		BVH*		_d_bvh = nullptr;
@@ -114,7 +110,7 @@ class Scene {
 		bool _bvhDirty = false;
 		bool _lightsDirty = false;
 		
-		// Data struct pour le kernel
+		// ---Data struct pour le kernel---
 		bool		_SceneUpdated = false;
 		bool		_loaded  = false;
 		SceneData	_gpuData = {};

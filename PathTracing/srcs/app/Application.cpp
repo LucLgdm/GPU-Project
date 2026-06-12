@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 10:54:14 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 12:13:44 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void Application::run() {
 	std::cout << "\033[32m[Application]\033[0m\033[33m	Running!\033[0m" << std::endl;
 	float currentTime = glfwGetTime();
 	while (!glfwWindowShouldClose(_window)) {
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.3f, 0.3f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
 		float deltaTime = glfwGetTime() - currentTime;

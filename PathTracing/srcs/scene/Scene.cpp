@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 11:06:28 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 12:30:25 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,6 +159,24 @@ void Scene::loadTexture(const std::string& path) {
 	_textureObjects.push_back(textureObject);
 	_d_textureArrays.push_back(d_textureArray);
 }
+
+
+/************************************************************************
+ * Light
+ * **********************************************************************/
+void Scene::addDirLight(DirLight light) {
+	_dirLights.push_back(light);
+	_dirLights.back().direction = normalize(-_dirLights.back().direction);
+	_dirLights.back().index = _dirLights.size() - 1;
+	_lightsDirty = true;
+	_SceneUpdated = true;
+
+}
+
+void Scene::removeLight(size_t index) {
+	
+}
+
 
 /************************************************************************
  * Upload to GPU
