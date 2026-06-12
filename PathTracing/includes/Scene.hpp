@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:34:17 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 13:21:57 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 15:51:50 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,9 @@ struct SceneData {
 
 	DirLight*	dirLights;
 	int			dirLightCount;
+
+	SpotLight*	spotLights;
+	int 		spotLightCount;
 };
 
 // This class load a .obj on the CPU and send it to the GPU
@@ -61,7 +64,9 @@ class Scene {
 
 		// ---Light---
 		void addDirLight(DirLight light);
-		void removeLight(size_t);
+		void removeDirLight(size_t);
+		void addSpotLight(SpotLight light);
+		void removeSpotLight(size_t);
 		
 		// ---Getter && Setter---
 		const BVH& getBVH() const { return _bvh; }
@@ -71,11 +76,14 @@ class Scene {
 		const std::vector<SceneObject>& getObjects() const { return _objects; }
 		const std::vector<DirLight>& getDirLights() const { return _dirLights; }
 		DirLight& getDirLight(size_t i) {return _dirLights[i]; }
+		const std::vector<SpotLight>& getSpotLights() const { return _spotLights; }
+		SpotLight& getSpotLight(size_t i) {return _spotLights[i]; }
 	
 		bool isLoaded() const { return _loaded; }
 		bool isUpdated() const { return _SceneUpdated; }
 		void setUpdated(bool up) { _SceneUpdated = up; }
-		void setLightDirty(bool up) { _lightsDirty = up; }
+		void setDirLightDirty(bool up) { _lightsDirDirty = up; }
+		void setSpotLightDirty(bool up) { _lightsSpotDirty = up; }
 
 		// ---From CPU to GPU---
 		void uploadTriangleToGPU();
@@ -90,6 +98,7 @@ class Scene {
 		std::vector<SceneObject> _objects;
 		std::vector<std::string> _objectsName;
 		std::vector<DirLight> _dirLights;
+		std::vector<SpotLight> _spotLights;
 		BVH _bvh;
 	
 		std::vector<cudaTextureObject_t> _textureObjects;
@@ -102,13 +111,15 @@ class Scene {
 		BVHNode*	_d_nodes = nullptr;
 		int*		_d_triangleIndices = nullptr;
 		DirLight*	_d_dirLights = nullptr;
+		SpotLight*	_d_spotLights = nullptr;
 		cudaTextureObject_t* _d_textureObjects = nullptr;
 		
 		bool _trianglesDirty = false;
 		bool _materialsDirty = false;
 		bool _texturesDirty = false;
 		bool _bvhDirty = false;
-		bool _lightsDirty = false;
+		bool _lightsDirDirty = false;
+		bool _lightsSpotDirty = false;
 		
 		// ---Data struct pour le kernel---
 		bool		_SceneUpdated = false;

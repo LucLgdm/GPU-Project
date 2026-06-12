@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:59:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 14:13:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 15:43:35 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,4 +54,32 @@ struct DirLight {
 		direction.y = sinf(pitchRad);
 		direction.z = cosf(pitchRad) * sinf(yawRad);
 	}
+};
+
+struct SpotLight {
+	float3	position;
+	float3	direction;
+	float3	color;
+	float	intensity;
+	float	innerCutoff; // 100% light
+	float	outerCutoff; // complete dark
+	int		index;
+
+	SpotLight();
+	SpotLight(float3 pos, float3 dir, float3 col, float in, float inner, float outer)
+		: position(pos), direction(dir), color(col), intensity(in),
+			innerCutoff(inner), outerCutoff(outer) {}
+	
+	void getColor(float out[3]) {
+		out[0] = color.x;
+		out[1] = color.y;
+		out[2] = color.z;
+	}
+
+	void setColor(float in[3]) {
+		color.x = in[0];
+		color.y = in[1];
+		color.z = in[2];
+	}
+	
 };

@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 12:30:25 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 15:53:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,15 +168,25 @@ void Scene::addDirLight(DirLight light) {
 	_dirLights.push_back(light);
 	_dirLights.back().direction = normalize(-_dirLights.back().direction);
 	_dirLights.back().index = _dirLights.size() - 1;
-	_lightsDirty = true;
+	_lightsDirDirty = true;
 	_SceneUpdated = true;
 
 }
 
-void Scene::removeLight(size_t index) {
+void Scene::removeDirLight(size_t index) {
 	
 }
 
+void Scene::addSpotLight(SpotLight light) {
+	_spotLights.push_back(light);
+	_spotLights.back().index = _spotLights.size() - 1;
+	_lightsSpotDirty = true;
+	_SceneUpdated = true;
+}
+
+void Scene::removeSpotLight(size_t index) {
+	
+}
 
 /************************************************************************
  * Upload to GPU
@@ -194,7 +204,7 @@ void Scene::uploadToGPU() {
 	if (_bvhDirty)
 		uploadBVHToGPU();
 
-	if (_lightsDirty)
+	if (_lightsDirDirty || _lightsSpotDirty)
 		uploadLightToGPU();
 }
 
@@ -293,25 +303,51 @@ void Scene::uploadBVHToGPU() {
 }
 
 void Scene::uploadLightToGPU() {
-	size_t dirLightBytes = _dirLights.size() * sizeof(DirLight);
-
-	if (_d_dirLights) {
-		CUDA_CHECK(cudaFree(_d_dirLights));
-		_d_dirLights = nullptr;
+	if (_lightsDirDirty) {
+		
+		size_t dirLightBytes = _dirLights.size() * sizeof(DirLight);
+		
+		if (_d_dirLights) {
+			CUDA_CHECK(cudaFree(_d_dirLights));
+			_d_dirLights = nullptr;
+		}
+		
+		if (!_dirLights.empty()) {
+			CUDA_CHECK(cudaMalloc(&_d_dirLights, dirLightBytes));
+			CUDA_CHECK(cudaMemcpy(_d_dirLights, _dirLights.data(), dirLightBytes, cudaMemcpyHostToDevice));
+			_gpuData.dirLights = _d_dirLights;
+		} else {
+			_gpuData.dirLights = nullptr;
+		}
+		
+		_gpuData.dirLightCount = static_cast<int>(_dirLights.size());
+		
+		std::cout << "\033[32m[Scene]\033[0m \033[33mDirectional lights upload done : "
+		<< _gpuData.dirLightCount
+		<< " lights (" << dirLightBytes / 1024 << " KB)\033[0m\n";
+		_lightsDirDirty = false;
 	}
-
-	if (!_dirLights.empty()) {
-		CUDA_CHECK(cudaMalloc(&_d_dirLights, dirLightBytes));
-		CUDA_CHECK(cudaMemcpy(_d_dirLights, _dirLights.data(), dirLightBytes, cudaMemcpyHostToDevice));
-		_gpuData.dirLights = _d_dirLights;
-	} else {
-		_gpuData.dirLights = nullptr;
+	
+	if (_lightsSpotDirty) {
+		size_t spotLightBytes = _spotLights.size() * sizeof(SpotLight);
+		if (_d_spotLights) {
+			CUDA_CHECK(cudaFree(_d_spotLights));
+			_d_spotLights = nullptr;
+		}
+		
+		if (spotLightBytes) {
+			CUDA_CHECK(cudaMalloc(&_d_spotLights, spotLightBytes));
+			CUDA_CHECK(cudaMemcpy(_d_spotLights, _spotLights.data(), spotLightBytes, cudaMemcpyHostToDevice));
+			_gpuData.spotLights = _d_spotLights;
+		} else {
+			_gpuData.spotLights = nullptr;
+		}
+		
+		_gpuData.spotLightCount = static_cast<int>(_spotLights.size());
+		
+		std::cout << "\033[32m[Scene]\033[0m \033[33mSpot lights upload done : "
+		<< _gpuData.spotLightCount
+		<< " lights (" << spotLightBytes / 1024 << " KB)\033[0m\n";
+		_lightsSpotDirty = false;
 	}
-
-	_gpuData.dirLightCount = static_cast<int>(_dirLights.size());
-
-	std::cout << "\033[32m[Scene]\033[0m \033[33mDirectional lights upload done : "
-			<< _gpuData.dirLightCount
-			<< " lights (" << dirLightBytes / 1024 << " KB)\033[0m\n";
-	_lightsDirty = false;
 }

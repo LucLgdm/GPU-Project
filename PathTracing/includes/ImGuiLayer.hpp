@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:54:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/11 16:59:59 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 15:37:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,12 +36,16 @@ class ImGuiLayer {
 		void shutdown();
 
 		void sceneLoader(Scene* scene);
+		
 		// ---Object---
 		void displayListObject(Scene* scene);
+		
 		// ---Lights---
 		void displayLight(Scene* scene);
 		void addLight(Scene* scene);
-		void settingsLight(Scene* scene);
+		void settingsDirLight(Scene* scene, int selectedLight);
+		void settingsSpotLight(Scene* scene, int selectedLight);
+		
 		// ---Error---
 		void renderError();
 		
