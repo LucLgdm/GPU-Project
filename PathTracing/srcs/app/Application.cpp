@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/11 13:21:42 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 10:54:14 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,11 +106,6 @@ void Application::run() {
 		_camera.updatePos(_window);
 		_camera.updatePlan();
 		
-		if (_camera.isUpdated()) {
-			_computer->resetAccumulation();
-			_camera.setUpdated(false);
-		}
-		
 		if (_scene->isLoaded()) {
 			uchar4 *devPtr = _renderer->mapPBO();
 			_computer->update(devPtr, _scene->getGpuData());
@@ -123,10 +118,17 @@ void Application::run() {
 			_imguiLayer.render(_scene.get());
 			_imguiLayer.endFrame();
 		}
+		
+		if (_camera.isUpdated()) {
+			_computer->resetAccumulation();
+			_camera.setUpdated(false);
+		}
 		if (_scene->isUpdated()) {
 			_computer->resetAccumulation();
-			_scene->nonUpdated();
+			_scene->setUpdated(false);
 		}
+		
+		_scene->uploadToGPU();
 		
 		glfwSwapBuffers(_window);
 		glfwPollEvents();	

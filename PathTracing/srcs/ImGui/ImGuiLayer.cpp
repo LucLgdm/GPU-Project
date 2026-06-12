@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:56:58 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/11 13:10:11 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/11 18:30:28 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,12 +42,17 @@ void ImGuiLayer::shutdown() {
 	ImGui::DestroyContext();
 }
 
-	// --Render--
+/************************************************************************
+ * Render
+ * **********************************************************************/
 void ImGuiLayer::render(Scene* scene) {
 	ImGui::Begin("Hello ImGui");
 	
 	sceneLoader(scene);
 	displayListObject(scene);
+	displayLight(scene);
+	if (_uiAddLight) addLight(scene);
+	if (_uiSettingsLight) settingsLight(scene);
 	ImGui::End();
 
 	if (_showErrorPopup) {
@@ -57,6 +62,7 @@ void ImGuiLayer::render(Scene* scene) {
 	renderError();
 }
 
+	// ---Object---
 void ImGuiLayer::sceneLoader(Scene* scene) {
 	if (ImGui::Button("Load Object")) {
 		IGFD::FileDialogConfig config;
@@ -125,7 +131,74 @@ void ImGuiLayer::displayListObject(Scene* scene) {
 	}
 }
 
+	// ---Light---
+void ImGuiLayer::displayLight(Scene* scene) {
+	if (ImGui::Button("Add a Light")) _uiAddLight = true;
+	ImGui::SameLine();
+	if (ImGui::Button("Settings")) _uiSettingsLight = true;
+	
+	if (!scene->getDirLights().empty()){
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Directionnal Light");
+		for(auto dirL : scene->getDirLights()) {
+			ImGui::TextColored(ImVec4(0.1f, 0.1f, 1.0f, 1.0f), "Direction :"); ImGui::SameLine();
+			ImGui::Text("(%f, %f, %f) ", dirL.direction.x, dirL.direction.y, dirL.direction.z); ImGui::SameLine();
+			ImGui::TextColored(ImVec4(0.1f, 0.1f, 1.0f, 1.0f), "Color :"); ImGui::SameLine();
+			ImGui::Text("(%f, %f, %f) ", dirL.color.x, dirL.color.y, dirL.color.z); ImGui::SameLine();
+			ImGui::TextColored(ImVec4(0.1f, 0.1f, 1.0f, 1.0f), "Intensity :"); ImGui::SameLine();
+			ImGui::Text("%f", dirL.intensity);
+		}
+	}
+}
 
+void ImGuiLayer::addLight(Scene* scene) {
+	static float color[3] = {1.0f, 1.0f, 1.0f};
+	static float direction[3] = {0.0f, -1.0f, 0.0f};
+	static float intensity = 1.0f;
+	
+	ImGui::Begin("Add a Light");
+		static int uiType = -1;
+		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Type");
+		ImGui::RadioButton("Directionnal", &uiType, 0); ImGui::SameLine();
+		ImGui::RadioButton("SpotLight", &uiType, 1); // ImGui::SameLine();
+		
+		switch (uiType) {
+			case 0: {
+				ImGui::ColorPicker3("Color", color); ImGui::Separator();
+				ImGui::DragFloat3("Direction", direction, 0.01f); ImGui::Separator();
+				ImGui::SliderFloat("Intensity", &intensity, 0.0f, 2.0f);
+				
+				break ;
+			} case 1: {
+
+				break ;
+			}
+		}
+		if (ImGui::Button("Add")) {
+			switch (uiType) {
+				case 0: {
+					DirLight dirL(make_float3(direction[0], direction[1], direction[2]),
+								  make_float3(color[0], color[1], color[2]),
+								  intensity);
+					scene->addDirLight(dirL);
+					break ;
+				} case 1: {
+					break ;
+				}
+			}
+			_uiAddLight = false;
+		}
+			
+		ImGui::End();
+}
+
+void ImGuiLayer::settingsLight(Scene* scene) {
+	ImGui::Begin("Settings");
+
+	if (ImGui::Button("Ok")) _uiSettingsLight = false;
+	ImGui::End();
+}
+
+	// ---Error---
 void ImGuiLayer::renderError() {
 	if (ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
 		ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), _errorMessage.c_str());
