@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 12:13:44 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/15 16:36:37 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,7 @@ void Application::run() {
 
 		if (hPressed) {
 			_imguiLayer.beginFrame();
-			_imguiLayer.render(_scene.get());
+			_imguiLayer.render(_scene.get(), &_camera);
 			_imguiLayer.endFrame();
 		}
 		

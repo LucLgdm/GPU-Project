@@ -6,7 +6,7 @@
 #    By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/02/23 14:54:56 by lde-merc          #+#    #+#              #
-#    Updated: 2026/06/09 16:58:11 by lde-merc         ###   ########.fr        #
+#    Updated: 2026/06/15 16:17:57 by lde-merc         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CUDA_PATH = /usr/local/cuda-13.1
 CPP      = g++-14
 NVCC     = $(CUDA_PATH)/bin/nvcc
 FLAGS    = -MMD -MP -g -std=c++17 -fno-PIE -I$(CUDA_PREFIX)/include \
-			-Iincludes -I includes/ImGui/ \
+			-Iincludes -I includes/ImGui/ -I includes/ImGuizmo/ \
 			-I$(CUDA_PATH)/targets/x86_64-linux/include
 			
 NVFLAGS  = -MMD -MP -g -std=c++17 --extended-lambda \
@@ -37,6 +37,7 @@ SRC = $(wildcard srcs/*.cpp) \
       $(wildcard srcs/app/*.cpp) \
       $(wildcard srcs/cuda/*.cpp) \
       $(wildcard srcs/ImGui/*.cpp) \
+      $(wildcard srcs/ImGuizmo/*.cpp) \
       $(wildcard srcs/render/*.cpp) \
       $(wildcard srcs/scene/*.cpp)
 
@@ -67,7 +68,7 @@ clean: ## Clean object files
 
 fclean: clean ## Clean object files and executable
 	@rm -f $(NAME)
-	@rm -f imgui.ini
+# 	@rm -f imgui.ini
 	@printf "\033[35mDeleted everything!\n\033[0m"
 	
 re: fclean all ## Rebuild

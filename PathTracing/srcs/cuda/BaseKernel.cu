@@ -228,9 +228,8 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 
 				// Check the spot
 				float theta = dotProd(-L, normalize(light.direction));
-				float innerCos = cosf(light.innerCutoff);
-				float outerCos = cosf(light.outerCutoff);
-
+				float innerCos = cosf(light.innerCutoff * M_PI / 180.0f);
+				float outerCos = cosf(light.outerCutoff * M_PI / 180.0f);
 				if (theta < outerCos)
 					continue;
 				

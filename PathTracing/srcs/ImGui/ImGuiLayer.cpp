@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:56:58 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 17:17:55 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/15 20:14:57 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ void ImGuiLayer::beginFrame() {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
 }
 
 void ImGuiLayer::endFrame() {
@@ -48,7 +49,7 @@ void ImGuiLayer::shutdown() {
 /************************************************************************
  * Render
  * **********************************************************************/
-void ImGuiLayer::render(Scene* scene) {
+void ImGuiLayer::render(Scene* scene, Camera* camera) {	
 	ImGui::Begin("Hello ImGui");
 	
 	sceneLoader(scene);
@@ -56,9 +57,11 @@ void ImGuiLayer::render(Scene* scene) {
 	displayLight(scene);
 	if (_uiAddLight)
 		addLight(scene);
-		
+
 	ImGui::End();
 
+	renderSpotlightGuizmo(scene, camera);
+	
 	if (_showErrorPopup) {
 		ImGui::OpenPopup("Error");
 		_showErrorPopup = false;
@@ -142,35 +145,32 @@ void ImGuiLayer::displayListObject(Scene* scene) {
  * **********************************************************************/
 void ImGuiLayer::displayLight(Scene* scene) {
 	if (ImGui::Button("Add a Light")) _uiAddLight = true;
-
-	static int selectedDirLight = -1;
-	static int selectedSpotLight = -1;
 	
 	if (ImGui::BeginTable("SceneLight", 1)) {
 		for (int i = 0; i < scene->getDirLights().size(); ++i) {
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
-			bool selectedDir = (selectedDirLight == i);
+			bool selectedDir = (_selectedDirLight == i);
 			std::string label = "Dir Light " + std::to_string(scene->getDirLight(i).index);
 			if (ImGui::Selectable(label.c_str(), selectedDir))
-				selectedDirLight = i;
+				_selectedDirLight = i;
 		}
 
 		for (int i = 0; i < scene->getSpotLights().size(); ++i) {
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
-			bool selectedSpot = (selectedSpotLight == i);
+			bool selectedSpot = (_selectedSpotLight == i);
 			std::string label = "Spot Light " + std::to_string(scene->getSpotLight(i).index);
 			if (ImGui::Selectable(label.c_str(), selectedSpot))
-				selectedSpotLight = i;
+				_selectedSpotLight = i;
 		}
 		ImGui::EndTable();
 	}
 	
-	if (selectedDirLight >= 0)
-		settingsDirLight(scene, selectedDirLight);
-	if (selectedSpotLight >= 0)
-		settingsSpotLight(scene, selectedSpotLight);
+	if (_selectedDirLight >= 0)
+		settingsDirLight(scene);
+	if (_selectedSpotLight >= 0)
+		settingsSpotLight(scene);
 }
 
 void ImGuiLayer::addLight(Scene* scene) {
@@ -229,10 +229,10 @@ void ImGuiLayer::addLight(Scene* scene) {
 }
 
 	// ---Directionnal Light---
-void ImGuiLayer::settingsDirLight(Scene* scene, int& selectedDirLight) {
+void ImGuiLayer::settingsDirLight(Scene* scene) {
 	ImGui::Begin("Properties");
 
-	auto& lightDir = scene->getDirLight(selectedDirLight);
+	auto& lightDir = scene->getDirLight(_selectedDirLight);
 
 		// ---Color---
 	static float colorPro[3]; lightDir.getColor(colorPro);
@@ -273,13 +273,14 @@ void ImGuiLayer::settingsDirLight(Scene* scene, int& selectedDirLight) {
 	}
 	
 	if (ImGui::Button("OK"))
-		selectedDirLight = -1;
+		_selectedDirLight = -1;
 	ImGui::End();
 }
+
 	// ---SpotLight---
-void ImGuiLayer::settingsSpotLight(Scene* scene, int& selectedLight) {
+void ImGuiLayer::settingsSpotLight(Scene* scene) {
 	ImGui::Begin("Properties");
-	auto& spotLight = scene->getSpotLight(selectedLight);
+	auto& spotLight = scene->getSpotLight(_selectedSpotLight);
 	
 		// ---Color---
 	static float colorSpot[3]; spotLight.getColor(colorSpot);
@@ -294,7 +295,7 @@ void ImGuiLayer::settingsSpotLight(Scene* scene, int& selectedLight) {
 	}
 	
 	if (ImGui::Button("Ok"))
-		selectedLight = -1;
+		_selectedSpotLight = -1;
 	ImGui::End();
 }
 
@@ -312,5 +313,65 @@ void ImGuiLayer::renderError() {
 
 		ImGui::EndPopup();
 	}
+}
+
+/************************************************************************
+ * ImGuizmo
+* **********************************************************************/
+
+void ImGuiLayer::renderSpotlightGuizmo(Scene* scene, Camera* camera) {
+	if (_selectedSpotLight < 0)
+		return;
+
+	SpotLight& light = scene->getSpotLight(_selectedSpotLight);
+
+	glm::mat4 transform = glm::translate(glm::mat4(1.0f),
+		glm::vec3(light.getPos(0), light.getPos(1), light.getPos(2)));
+
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+
+	
+
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+
+	ImGui::SetNextWindowBgAlpha(0.0f);
+
+	ImGui::Begin("Viewport", nullptr,
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoBackground);
+		
+	ImGuizmo::SetDrawlist();
+
+	ImGuizmo::SetOrthographic(false);
+	ImGuiIO& io = ImGui::GetIO();
+	// ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)ImColor(0.35f, 0.3f, 0.3f));
+	
+	// ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+
+	glm::mat4 view = camera->getView();
+	glm::mat4 proj = camera->getProjection();
+
+	ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(proj),
+						ImGuizmo::TRANSLATE, ImGuizmo::WORLD,
+						glm::value_ptr(transform));
+
+	if (ImGuizmo::IsUsing()) {
+		ImGui::SetWindowFocus(nullptr);
+		light.setPos(transform[3][0], transform[3][1], transform[3][2]);
+		scene->setUpdated(true);
+		scene->setSpotLightDirty(true);
+	}
+
+	ImGui::End();
+	ImGui::PopStyleVar(2);
 }
 

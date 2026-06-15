@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:10:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/05 09:39:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/15 16:06:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ glm::mat4 Camera::getView() {
 	return glm::lookAt(_eye, _target, up);
 }
 
-glm::mat4 Camera::getProjection(float aspectRatio) {
+glm::mat4 Camera::getProjection() {
 	return _projectionMatrix;
 }
 

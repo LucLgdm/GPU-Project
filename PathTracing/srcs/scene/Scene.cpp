@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/27 14:37:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 15:53:12 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/15 16:44:01 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,10 @@
  * Constructor & Destructor
  * **********************************************************************/
 Scene::Scene() {
+	_objects.clear();
+	_objectsName.clear();
+	_dirLights.clear();
+	_spotLights.clear();
 	std::cout << "\033[32m[Scene]\033[0m \033[33mScene created.\033[0m" << std::endl;
 }
 
@@ -38,10 +42,14 @@ Scene::~Scene() {
 }
 
 void Scene::freeGPU() {
+	if (_d_triangles) { cudaFree(_d_triangles); _d_triangles = nullptr; }
+	if (_d_materials) { cudaFree(_d_materials); _d_materials = nullptr; }
+	if (_d_bvh) { cudaFree(_d_bvh); _d_bvh = nullptr; }
 	if (_d_nodes) { cudaFree(_d_nodes); _d_nodes = nullptr; }
 	if (_d_triangleIndices) { cudaFree(_d_triangleIndices); _d_triangleIndices = nullptr; }
-	if (_d_bvh) { cudaFree(_d_bvh); _d_bvh = nullptr; }
 	if (_d_dirLights) { cudaFree(_d_dirLights); _d_dirLights = nullptr; }
+	if (_d_spotLights) { cudaFree(_d_spotLights); _d_spotLights = nullptr; }
+	
 	for (auto& texObj : _textureObjects) {
 		cudaDestroyTextureObject(texObj);
 	}

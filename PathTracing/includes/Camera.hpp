@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 18:11:11 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/05 09:38:35 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/15 16:06:16 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ class Camera {
 		void init(GLFWwindow *, int, int);
 
 		glm::mat4 getView();
-		glm::mat4 getProjection(float);
+		glm::mat4 getProjection();
 		const glm::vec3& getEyes() const { return _eye; };
 		const glm::vec3& getTarget() const { return _target; };
 		const glm::vec3& getUp() const { return _up; };

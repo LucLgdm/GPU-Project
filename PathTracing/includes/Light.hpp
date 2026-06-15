@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:59:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 15:43:35 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/15 16:05:21 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,4 +82,23 @@ struct SpotLight {
 		color.z = in[2];
 	}
 	
+	float getPos(int i) {
+		switch (i){
+			case 0:
+				return position.x;
+			case 1:
+				return position.y;
+			case 2:
+				return position.z;
+			default:
+				break;
+		}
+		return 0;
+	}
+
+	void setPos(float x, float y, float z) {
+		position.x = x;
+		position.y = y;
+		position.z = z;
+	}
 };
