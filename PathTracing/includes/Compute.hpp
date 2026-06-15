@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/26 11:17:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/04/14 13:34:26 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 16:37:51 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,11 @@ class Compute {
 		
 		void update(uchar4*, const SceneData&);
 		void resetAccumulation();
+		void updateHandW(int height, int width) {
+			_height = height;
+			_width = width;
+		}
+		
 	private:
 		int _height;
 		int _width;

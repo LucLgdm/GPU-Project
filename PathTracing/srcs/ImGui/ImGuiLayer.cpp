@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:56:58 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/12 15:52:50 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 17:17:55 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ void ImGuiLayer::render(Scene* scene) {
 	displayLight(scene);
 	if (_uiAddLight)
 		addLight(scene);
+		
 	ImGui::End();
 
 	if (_showErrorPopup) {
@@ -160,7 +161,7 @@ void ImGuiLayer::displayLight(Scene* scene) {
 			ImGui::TableSetColumnIndex(0);
 			bool selectedSpot = (selectedSpotLight == i);
 			std::string label = "Spot Light " + std::to_string(scene->getSpotLight(i).index);
-			if (ImGui::Selectable(label.c_str(), selectedSpotLight))
+			if (ImGui::Selectable(label.c_str(), selectedSpot))
 				selectedSpotLight = i;
 		}
 		ImGui::EndTable();
@@ -228,7 +229,7 @@ void ImGuiLayer::addLight(Scene* scene) {
 }
 
 	// ---Directionnal Light---
-void ImGuiLayer::settingsDirLight(Scene* scene, int selectedDirLight) {
+void ImGuiLayer::settingsDirLight(Scene* scene, int& selectedDirLight) {
 	ImGui::Begin("Properties");
 
 	auto& lightDir = scene->getDirLight(selectedDirLight);
@@ -238,7 +239,8 @@ void ImGuiLayer::settingsDirLight(Scene* scene, int selectedDirLight) {
 	float tmp[3]; lightDir.getColor(tmp);
 
 	ImGui::ColorPicker3("Color", colorPro);
-	if (colorPro != tmp) {
+	bool changed = (colorPro[0] != tmp[0]) || (colorPro[1] != tmp[1]) || (colorPro[2] != tmp[2]);
+	if (changed) {
 		lightDir.setColor(colorPro);
 		scene->setUpdated(true);
 		scene->setDirLightDirty(true);
@@ -255,7 +257,8 @@ void ImGuiLayer::settingsDirLight(Scene* scene, int selectedDirLight) {
 	lightDir.setDirection(yaw, pitch);
 	
 	lightDir.getDirection(tmpDir);
-	if (tmp != tmpDir) {
+	changed = (tmp[0] != tmpDir[0] || tmp[1] != tmpDir[1] || tmp[2] != tmpDir[2]);
+	if (changed) {
 		scene->setUpdated(true);
 		scene->setDirLightDirty(true);
 	}
@@ -273,8 +276,8 @@ void ImGuiLayer::settingsDirLight(Scene* scene, int selectedDirLight) {
 		selectedDirLight = -1;
 	ImGui::End();
 }
-
-void ImGuiLayer::settingsSpotLight(Scene* scene, int selectedLight) {
+	// ---SpotLight---
+void ImGuiLayer::settingsSpotLight(Scene* scene, int& selectedLight) {
 	ImGui::Begin("Properties");
 	auto& spotLight = scene->getSpotLight(selectedLight);
 	
@@ -283,7 +286,8 @@ void ImGuiLayer::settingsSpotLight(Scene* scene, int selectedLight) {
 	float tmp[3]; spotLight.getColor(tmp);
 	
 	ImGui::ColorPicker3("Color", colorSpot);
-	if (tmp != colorSpot) {
+	bool changed = (colorSpot[0] != tmp[0] || colorSpot[1] != tmp[1] || colorSpot[2] != tmp[2]);
+	if (changed) {
 		spotLight.setColor(colorSpot);
 		scene->setUpdated(true);
 		scene->setSpotLightDirty(true);

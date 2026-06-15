@@ -163,7 +163,8 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 								const Triangle* triangles, int triCount,
 								const BVHNode* nodes, const int* bvhIndices, int rootIndex,
 								const DirLight* dirLights, int dirLightCount,
-								const Material* materials, const cudaTextureObject_t* textures) {
+								const Material* materials, const cudaTextureObject_t* textures,
+								const SpotLight* spotLights, int spotLightCount) {
 	
 	// x and y are the pixel coordinate
 	int x = blockIdx.x * blockDim.x + threadIdx.x;
@@ -177,7 +178,7 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 	float u = ((float)x + randFloat(seed)) / width;
 	float v = ((float)y + randFloat(seed)) / height;
 
-	float3 finalColor = make_float3(0.1f, 0.1f, 0.1f);
+	float3 finalColor = make_float3(0.0f, 0.0f, 0.0f);
 	float3 throughput = make_float3(1.0f, 1.0f, 1.0f);
 	static int maxDepth = 5;
 
@@ -193,10 +194,11 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 		if (didHit) {
 			float3 color = make_float3(0.0f, 0.0f, 0.0f);
 
+			// ---Directionnal Lights---
 			for (int i = 0; i < dirLightCount; i++) {
 				const DirLight& light = dirLights[i];
 
-				Ray shadowRay = { hit.posImpact + hit.normal * 0.001f, -light.direction }; // Offset to avoid self-intersection
+				Ray shadowRay = {hit.posImpact + hit.normal * 0.001f, -light.direction}; // Offset to avoid self-intersection
 				HitRecord shadowHit; shadowHit.hit = false;
 				intersectBVH(shadowRay, nodes, bvhIndices, triangles, rootIndex, shadowHit);
 				if (shadowHit.hit)
@@ -215,6 +217,54 @@ __global__ void pathTraceKernel(uchar4* fb, int width, int height, int frameInde
 					color = color + materials[hit.matIndex].albedo * light.color * NdotL * light.intensity;
 				}
 			}
+
+			// ---Spot lights---
+			for (int i = 0; i < spotLightCount; i++) {
+				const SpotLight& light = spotLights[i];
+
+				float3 toLight = light.position - hit.posImpact;
+				float dist = length(toLight);
+				float3 L = toLight / dist;
+
+				// Check the spot
+				float theta = dotProd(-L, normalize(light.direction));
+				float innerCos = cosf(light.innerCutoff);
+				float outerCos = cosf(light.outerCutoff);
+
+				if (theta < outerCos)
+					continue;
+				
+				float spotFactor = 1.0f;
+
+				if (theta < innerCos) {
+					float epsilon = innerCos - outerCos;
+					spotFactor = (theta - outerCos) / epsilon;
+				}
+
+				// Shadow ray
+				Ray shadowRay = {hit.posImpact + hit.normal * 0.001f, L};
+				HitRecord shadowHit; shadowHit.hit = false;
+				intersectBVH(shadowRay, nodes, bvhIndices, triangles, rootIndex, shadowHit);
+
+				// Only if the object is between the light and the point
+				if (shadowHit.hit && shadowHit.t < dist)
+					continue;
+				
+				float NdotL = fmaxf(dotProd(hit.normal, L), 0.0f);
+				float attenuation = 1.0f / (dist * dist);
+
+				if (materials[hit.matIndex].textureID != -1) {
+					float4 texColor = tex2D<float4>(textures[materials[hit.matIndex].textureID],
+										hit.uv.x, hit.uv.y);
+					float3 finalColTex = make_float3(texColor.x, texColor.y, texColor.z);
+
+					color = color + finalColTex * light.color * NdotL * attenuation * spotFactor * light.intensity;
+				} else {
+					color = color + materials[hit.matIndex].albedo * light.color * NdotL * attenuation * spotFactor * light.intensity;
+				}
+
+			}
+
 			color = color + materials[hit.matIndex].emission; // Add emissive component
 			finalColor = finalColor + throughput * color;
 
@@ -273,7 +323,8 @@ void Compute::update(uchar4* devPtr, const SceneData& scene) {
 									scene.triangles, scene.triangleCount,
 									scene.bvhNodes, scene.bvhTriangleIndices, scene.bvhRootIndex,
 									scene.dirLights, scene.dirLightCount,
-									scene.materials, scene.textureObjects);
+									scene.materials, scene.textureObjects,
+									scene.spotLights, scene.spotLightCount);
 
 	cudaError_t err = cudaGetLastError();
 	if (err != cudaSuccess)

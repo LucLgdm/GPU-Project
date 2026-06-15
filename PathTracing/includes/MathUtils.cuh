@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/31 12:45:59 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/03/31 12:32:18 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/12 17:05:53 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ __host__ __device__ inline float3 normalize(float3 a) {
 }
 
 
-// Bqasic functions
+// Basic functions
 __host__ __device__ inline float3 fminf(const float3 &a, const float3 &b) {
     return make_float3(
         fminf(a.x, b.x),
@@ -83,6 +83,10 @@ __host__ __device__ inline float3 fmaxf(const float3 &a, const float3 &b) {
         fmaxf(a.y, b.y),
         fmaxf(a.z, b.z)
     );
+}
+
+__host__ __device__ inline float length(const float3 a) {
+	return (sqrtf(a.x * a.x + a.y * a.y + a.z * a.z));
 }
 
 // Conversion
