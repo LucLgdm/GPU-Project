@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/08 15:59:19 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/15 16:05:21 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/16 14:50:03 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,5 +100,14 @@ struct SpotLight {
 		position.x = x;
 		position.y = y;
 		position.z = z;
+	}
+
+	void setIntensity(float x) {
+		intensity = x;
+	}
+
+	void setAngle(float in, float out) {
+		innerCutoff = in;
+		outerCutoff = out;
 	}
 };

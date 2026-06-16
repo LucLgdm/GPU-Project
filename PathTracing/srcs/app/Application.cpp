@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 17:46:04 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/15 16:36:37 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/16 16:32:57 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void Application::init() {
 	_computer = std::make_unique<Compute>(_height, _width);
 	_scene = std::make_unique<Scene>();
 	_camera.init(_window, _width, _height);
-	_imguiLayer.init(_window);
+	_imguiLayer.init(_window, _width, _height);
 	
 	_renderer->initCuda();
 	

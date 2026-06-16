@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:54:16 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/15 16:22:01 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/16 18:52:12 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@
 #include "ImGui/ImGuiFileDialog.h"
 
 #include "ImGuizmo.h"
+#include "ImGui/imgui_spectrum.h"
 
 #include <iostream>
 
@@ -35,7 +36,7 @@ class ImGuiLayer {
 		ImGuiLayer();
 		~ImGuiLayer();
 
-		void init(GLFWwindow* window);
+		void init(GLFWwindow* window, int width, int height);
 		void beginFrame();
 		void render(Scene* scene, Camera* camera);
 		void endFrame();
@@ -44,7 +45,7 @@ class ImGuiLayer {
 		void sceneLoader(Scene* scene);
 		
 		// ---Object---
-		void displayListObject(Scene* scene);
+		int displayListObject(Scene* scene);
 		
 		// ---Lights---
 		void displayLight(Scene* scene);
@@ -59,6 +60,12 @@ class ImGuiLayer {
 		void renderSpotlightGuizmo(Scene* scene, Camera* camera);
 		
 	private:
+	
+		float _openglwidth;
+		float _openglheight;
+		float _viewPortWidth;
+		float _viewPortHeight;
+		
 		std::string _errorMessage;
 		bool _showErrorPopup = false;
 		

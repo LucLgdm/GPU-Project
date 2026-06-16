@@ -6,11 +6,13 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:56:58 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/15 20:14:57 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/16 19:48:02 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ImGuiLayer.hpp"
+
+constexpr float panelWidth = 350.0f;
 
 ImGuiLayer::ImGuiLayer() {}
 
@@ -19,11 +21,38 @@ ImGuiLayer::~ImGuiLayer() {}
 /************************************************************************
  * Necessary
  * **********************************************************************/
-void ImGuiLayer::init(GLFWwindow* window) {
+void ImGuiLayer::init(GLFWwindow* window, int width, int height) {
+	_openglwidth = (float)width;
+	_openglheight = (float)height;
+	_viewPortWidth = _openglwidth - panelWidth;
+	_viewPortHeight = _openglheight;
+	
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui::StyleColorsDark();
 	ImGui_ImplOpenGL3_Init("#version 330");
+	
+	ImGuiStyle* style = &ImGui::GetStyle();
+	style->GrabRounding = 4.0f;
+	ImVec4* colors = style->Colors;
+	// colors[ImGuiCol_WindowBg] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::GRAY100);
+	// colors[ImGuiCol_ScrollbarBg] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::GRAY100); // same as regular background
+	colors[ImGuiCol_ScrollbarGrab] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::GRAY400);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::GRAY600);
+	colors[ImGuiCol_ScrollbarGrabActive] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::GRAY700);
+	colors[ImGuiCol_CheckMark] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::BLUE500);
+	colors[ImGuiCol_SliderGrab] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::GRAY700);
+	colors[ImGuiCol_SliderGrabActive] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::GRAY800);
+	colors[ImGuiCol_Header] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::BLUE400);
+	colors[ImGuiCol_HeaderHovered] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::BLUE500);
+	colors[ImGuiCol_HeaderActive] = ImGui::ColorConvertU32ToFloat4(ImGui::Spectrum::Static::BLUE600);
+
+	style->WindowRounding = 5.0f;
+	style->WindowBorderSize = 2.0f;
+	style->FrameBorderSize = 1.0f;
+
+	colors[ImGuiCol_Border] = ImVec4(0.22f, 0.22f, 0.22f, 1.0f);
+	style->FrameRounding = 5.0f;
 	
 	std::cout << "\033[32m[ImGuiLayer]\033[0m \033[33mImGui layer initialized.\033[0m" << std::endl;
 }
@@ -50,17 +79,47 @@ void ImGuiLayer::shutdown() {
  * Render
  * **********************************************************************/
 void ImGuiLayer::render(Scene* scene, Camera* camera) {	
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(panelWidth, panelWidth));
+	int selectedObject;
 	ImGui::Begin("Hello ImGui");
 	
 	sceneLoader(scene);
-	displayListObject(scene);
+	selectedObject = displayListObject(scene);
+	if (ImGui::Button("Add a Light")) _uiAddLight = true;
 	displayLight(scene);
 	if (_uiAddLight)
 		addLight(scene);
 
 	ImGui::End();
 
+	ImGui::SetNextWindowPos(ImVec2(0, panelWidth));
+	ImGui::SetNextWindowSize(ImVec2(panelWidth, panelWidth));
+	ImGui::Begin("Properties");
+	if (ImGui::CollapsingHeader("Object")) {
+		if (selectedObject >= 0) {
+			auto& object = scene->getObjects()[selectedObject];
+
+			ImGui::Separator();
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Object Properties");
+
+			size_t count = object.getTriangleCount();
+			ImGui::Text("Name: %s", scene->getObjName()[selectedObject].c_str());
+			ImGui::Text("Triangles: %llu", static_cast<long long int>(count));
+		}
+	}
+	
+	if (ImGui::CollapsingHeader("Light")) {
+		if (_selectedDirLight >= 0)
+			settingsDirLight(scene);
+		if (_selectedSpotLight >= 0)
+			settingsSpotLight(scene);
+	}
+
+	ImGui::End();
+
 	renderSpotlightGuizmo(scene, camera);
+
 	
 	if (_showErrorPopup) {
 		ImGui::OpenPopup("Error");
@@ -98,7 +157,7 @@ void ImGuiLayer::sceneLoader(Scene* scene) {
 	}
 }
 
-void ImGuiLayer::displayListObject(Scene* scene) {
+int ImGuiLayer::displayListObject(Scene* scene) {
 	static int selectedObject = -1;
 	if (ImGui::BeginTable("SceneObjects", 2)) {
 		for (int i = 0; i < scene->getObjects().size(); ++i) {
@@ -121,30 +180,13 @@ void ImGuiLayer::displayListObject(Scene* scene) {
 		}
 		ImGui::EndTable();
 	}
-
-	if (selectedObject >= 0) {
-		ImGui::Begin("Properties");
-		
-		auto& object = scene->getObjects()[selectedObject];
-
-		ImGui::Separator();
-		ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Object Properties");
-
-		size_t count = object.getTriangleCount();
-		ImGui::Text("Name: %s", scene->getObjName()[selectedObject].c_str());
-		ImGui::Text("Triangles: %llu", static_cast<long long int>(count));
-
-		if (ImGui::Button("OK"))
-			selectedObject = -1;
-		ImGui::End();
-	}
+	return selectedObject;
 }
 
 /************************************************************************
  * Lights
  * **********************************************************************/
 void ImGuiLayer::displayLight(Scene* scene) {
-	if (ImGui::Button("Add a Light")) _uiAddLight = true;
 	
 	if (ImGui::BeginTable("SceneLight", 1)) {
 		for (int i = 0; i < scene->getDirLights().size(); ++i) {
@@ -166,11 +208,6 @@ void ImGuiLayer::displayLight(Scene* scene) {
 		}
 		ImGui::EndTable();
 	}
-	
-	if (_selectedDirLight >= 0)
-		settingsDirLight(scene);
-	if (_selectedSpotLight >= 0)
-		settingsSpotLight(scene);
 }
 
 void ImGuiLayer::addLight(Scene* scene) {
@@ -191,7 +228,6 @@ void ImGuiLayer::addLight(Scene* scene) {
 				ImGui::ColorPicker3("Color", color); ImGui::Separator();
 				ImGui::DragFloat3("Direction", direction, 0.01f); ImGui::Separator();
 				ImGui::SliderFloat("Intensity", &intensity, 0.0f, 2.0f);
-				
 				break ;
 			} case 1: {
 				ImGui::DragFloat3("Position", position, 0.01f);
@@ -211,10 +247,17 @@ void ImGuiLayer::addLight(Scene* scene) {
 					scene->addDirLight(dirL);
 					break ;
 				} case 1: {
+					if (angle[0] >= angle[1] || angle[0] == 0) {
+						_showErrorPopup = true;
+						_errorMessage = "SpotLights follow 2 rules:\n";
+						_errorMessage += "	_ innerCutoff MUST be greater than 0\n";
+						_errorMessage += "	_ outerCutoff MUST be greater than interCutoff\n";
+						break ;
+					}
 					SpotLight spotL(make_float3(position[0], position[1], position[2]),
 									make_float3(direction[0], direction[1], direction[2]),
 									make_float3(color[0], color[1], color[2]),
-									intensity, angle[0], angle[1]);
+												intensity, angle[0], angle[1]);
 					scene->addSpotLight(spotL);
 					break ;
 				}
@@ -238,7 +281,7 @@ void ImGuiLayer::settingsDirLight(Scene* scene) {
 	static float colorPro[3]; lightDir.getColor(colorPro);
 	float tmp[3]; lightDir.getColor(tmp);
 
-	ImGui::ColorPicker3("Color", colorPro);
+	ImGui::ColorEdit3("Color", colorPro);
 	bool changed = (colorPro[0] != tmp[0]) || (colorPro[1] != tmp[1]) || (colorPro[2] != tmp[2]);
 	if (changed) {
 		lightDir.setColor(colorPro);
@@ -286,14 +329,41 @@ void ImGuiLayer::settingsSpotLight(Scene* scene) {
 	static float colorSpot[3]; spotLight.getColor(colorSpot);
 	float tmp[3]; spotLight.getColor(tmp);
 	
-	ImGui::ColorPicker3("Color", colorSpot);
+	// ImGui::ColorPicker3("Color", colorSpot);
+	ImGui::ColorEdit3("Color", colorSpot);
 	bool changed = (colorSpot[0] != tmp[0] || colorSpot[1] != tmp[1] || colorSpot[2] != tmp[2]);
 	if (changed) {
 		spotLight.setColor(colorSpot);
 		scene->setUpdated(true);
-		scene->setSpotLightDirty(true);
+	}
+
+		// ---Inner/Outer cutoff
+	static float angle[2]; angle[0] = spotLight.innerCutoff; angle[1] = spotLight.outerCutoff;
+	ImGui::SliderFloat2("Angle in & out", angle, 0.0f, 89.0f);
+	if (angle[0] != spotLight.innerCutoff || angle[1] != spotLight.outerCutoff) {
+		spotLight.setAngle(angle[0], angle[1]);
+		scene->setUpdated(true);
+	}
+
+		// ---Intensity---
+	static float intensitySpot = spotLight.intensity;
+	ImGui::SliderFloat("Intensity", &intensitySpot, 0.0f, 1.0f);
+	if (intensitySpot != spotLight.intensity) {
+		spotLight.setIntensity(intensitySpot);
+		scene->setUpdated(true);	
 	}
 	
+		// ---Postion---
+	static float positionSpot[3];
+	positionSpot[0] = spotLight.getPos(0); positionSpot[1] = spotLight.getPos(1);
+	positionSpot[2] = spotLight.getPos(2);
+
+	// ImGui::SliderFloat3("Position", positionSpot);
+
+	
+	if (scene->isUpdated())
+		scene->setSpotLightDirty(true);
+		
 	if (ImGui::Button("Ok"))
 		_selectedSpotLight = -1;
 	ImGui::End();
@@ -308,8 +378,10 @@ void ImGuiLayer::renderError() {
 
 		ImGui::Separator();
 
-		if (ImGui::Button("OK"))
+		if (ImGui::Button("OK")) {
 			ImGui::CloseCurrentPopup();
+			_errorMessage = "";
+		}
 
 		ImGui::EndPopup();
 	}
@@ -328,34 +400,27 @@ void ImGuiLayer::renderSpotlightGuizmo(Scene* scene, Camera* camera) {
 	glm::mat4 transform = glm::translate(glm::mat4(1.0f),
 		glm::vec3(light.getPos(0), light.getPos(1), light.getPos(2)));
 
-
-	ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-	ImGui::SetNextWindowPos(viewport->Pos);
-	ImGui::SetNextWindowSize(viewport->Size);
-
 	
+	
+	ImGui::SetNextWindowPos(ImVec2(panelWidth, 0));
+	ImGui::SetNextWindowSize(ImVec2(_viewPortWidth, _viewPortHeight));
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-	ImGui::SetNextWindowBgAlpha(0.0f);
-
-	ImGui::Begin("Viewport", nullptr,
+	ImGui::Begin("Viewport",
+		nullptr,
 		ImGuiWindowFlags_NoTitleBar |
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoScrollWithMouse |
 		ImGuiWindowFlags_NoBackground);
 		
 	ImGuizmo::SetDrawlist();
 
 	ImGuizmo::SetOrthographic(false);
 	ImGuiIO& io = ImGui::GetIO();
-	// ImGui::PushStyleColor(ImGuiCol_WindowBg, (ImVec4)ImColor(0.35f, 0.3f, 0.3f));
 	
-	// ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-	ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowSize().x, ImGui::GetWindowSize().y);
+	ImGuizmo::SetRect(panelWidth, 0, _viewPortWidth, _viewPortHeight);
 
 	glm::mat4 view = camera->getView();
 	glm::mat4 proj = camera->getProjection();
@@ -372,6 +437,5 @@ void ImGuiLayer::renderSpotlightGuizmo(Scene* scene, Camera* camera) {
 	}
 
 	ImGui::End();
-	ImGui::PopStyleVar(2);
 }
 
