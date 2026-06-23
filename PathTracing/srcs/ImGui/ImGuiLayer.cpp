@@ -6,7 +6,7 @@
 /*   By: lde-merc <lde-merc@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/04 12:56:58 by lde-merc          #+#    #+#             */
-/*   Updated: 2026/06/16 19:48:02 by lde-merc         ###   ########.fr       */
+/*   Updated: 2026/06/23 15:59:42 by lde-merc         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ void ImGuiLayer::render(Scene* scene, Camera* camera) {
 	if (ImGui::CollapsingHeader("Light")) {
 		if (_selectedDirLight >= 0)
 			settingsDirLight(scene);
+		ImGui::Separator();
 		if (_selectedSpotLight >= 0)
 			settingsSpotLight(scene);
 	}
@@ -273,14 +274,13 @@ void ImGuiLayer::addLight(Scene* scene) {
 
 	// ---Directionnal Light---
 void ImGuiLayer::settingsDirLight(Scene* scene) {
-	ImGui::Begin("Properties");
-
 	auto& lightDir = scene->getDirLight(_selectedDirLight);
 
 		// ---Color---
-	static float colorPro[3]; lightDir.getColor(colorPro);
+	float colorPro[3]; lightDir.getColor(colorPro);
 	float tmp[3]; lightDir.getColor(tmp);
 
+	ImGui::PushID("DirLight");
 	ImGui::ColorEdit3("Color", colorPro);
 	bool changed = (colorPro[0] != tmp[0]) || (colorPro[1] != tmp[1]) || (colorPro[2] != tmp[2]);
 	if (changed) {
@@ -290,8 +290,8 @@ void ImGuiLayer::settingsDirLight(Scene* scene) {
 	}
 	
 		// ---Direction---
-	static float yaw = 0.0f;
-	static float pitch = -45.0f;
+	float yaw = 0.0f;
+	float pitch = -45.0f;
 	float tmpDir[3];
 	lightDir.getDirection(tmp);
 	
@@ -307,7 +307,7 @@ void ImGuiLayer::settingsDirLight(Scene* scene) {
 	}
 	
 		// ---Intensity---
-	static float intensityPro = lightDir.intensity;
+	float intensityPro = lightDir.intensity;
 	ImGui::SliderFloat("Intensity", &intensityPro, 0.0f, 2.0f);
 	if (intensityPro != lightDir.intensity) {
 		lightDir.setIntensity(intensityPro);
@@ -315,20 +315,18 @@ void ImGuiLayer::settingsDirLight(Scene* scene) {
 		scene->setDirLightDirty(true);
 	}
 	
-	if (ImGui::Button("OK"))
-		_selectedDirLight = -1;
-	ImGui::End();
+	ImGui::PopID();
 }
 
 	// ---SpotLight---
 void ImGuiLayer::settingsSpotLight(Scene* scene) {
-	ImGui::Begin("Properties");
 	auto& spotLight = scene->getSpotLight(_selectedSpotLight);
 	
 		// ---Color---
-	static float colorSpot[3]; spotLight.getColor(colorSpot);
+	float colorSpot[3]; spotLight.getColor(colorSpot);
 	float tmp[3]; spotLight.getColor(tmp);
 	
+	ImGui::PushID("SpotLight");
 	// ImGui::ColorPicker3("Color", colorSpot);
 	ImGui::ColorEdit3("Color", colorSpot);
 	bool changed = (colorSpot[0] != tmp[0] || colorSpot[1] != tmp[1] || colorSpot[2] != tmp[2]);
@@ -338,7 +336,7 @@ void ImGuiLayer::settingsSpotLight(Scene* scene) {
 	}
 
 		// ---Inner/Outer cutoff
-	static float angle[2]; angle[0] = spotLight.innerCutoff; angle[1] = spotLight.outerCutoff;
+	float angle[2]; angle[0] = spotLight.innerCutoff; angle[1] = spotLight.outerCutoff;
 	ImGui::SliderFloat2("Angle in & out", angle, 0.0f, 89.0f);
 	if (angle[0] != spotLight.innerCutoff || angle[1] != spotLight.outerCutoff) {
 		spotLight.setAngle(angle[0], angle[1]);
@@ -346,27 +344,24 @@ void ImGuiLayer::settingsSpotLight(Scene* scene) {
 	}
 
 		// ---Intensity---
-	static float intensitySpot = spotLight.intensity;
+	float intensitySpot = spotLight.intensity;
 	ImGui::SliderFloat("Intensity", &intensitySpot, 0.0f, 1.0f);
 	if (intensitySpot != spotLight.intensity) {
 		spotLight.setIntensity(intensitySpot);
 		scene->setUpdated(true);	
 	}
 	
+	ImGui::PopID();
 		// ---Postion---
-	static float positionSpot[3];
-	positionSpot[0] = spotLight.getPos(0); positionSpot[1] = spotLight.getPos(1);
+	float positionSpot[3];
+	positionSpot[0] = spotLight.getPos(0);
+	positionSpot[1] = spotLight.getPos(1);
 	positionSpot[2] = spotLight.getPos(2);
 
 	// ImGui::SliderFloat3("Position", positionSpot);
-
 	
 	if (scene->isUpdated())
 		scene->setSpotLightDirty(true);
-		
-	if (ImGui::Button("Ok"))
-		_selectedSpotLight = -1;
-	ImGui::End();
 }
 
 /************************************************************************
